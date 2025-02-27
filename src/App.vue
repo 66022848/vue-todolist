@@ -84,6 +84,7 @@ export default {
     },
     selectMenu(menu) {
       this.selectedMenu = menu;
+      this.$router.push(`/dashboard/${menu}`);
     },
     toggleDropdown() {
       this.isDropdownOpen = !this.isDropdownOpen;
@@ -252,6 +253,7 @@ export default {
   font-size: 20px;
   cursor: pointer;
   margin-right: 10px;
+  color: #000000;
 }
 
 .navbar-left .logo {
@@ -269,6 +271,7 @@ export default {
   padding: 8px 12px;
   border: 1px solid #ddd;
   border-radius: 20px;
+  background: #ffffff
 }
 
 .navbar-right {
@@ -281,7 +284,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: #ffe6e6;
+  background: #FFDFDF;
   padding: 5px 10px;
   border-radius: 25px;
 }
@@ -302,11 +305,12 @@ export default {
 .navbar-right .profile-info .profile-name {
   font-weight: bold;
   font-size: 14px;
+  color : #000000;
 }
 
 .navbar-right .profile-info .profile-role {
   font-size: 12px;
-  color: gray;
+  color: #000000;
 }
 
 .navbar-right .dropdown {
@@ -336,7 +340,7 @@ export default {
 }
 
 .dropdown-menu li:hover {
-  background-color: #f5f5f5;
+  background-color: #ffffff;
 }
 
 </style>

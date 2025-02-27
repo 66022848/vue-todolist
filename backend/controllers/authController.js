@@ -13,6 +13,17 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
+    // ตรวจสอบความยาวของรหัสผ่าน
+    if (password.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+    }
+
+    // ตรวจสอบรูปแบบของอีเมล (ใช้ regex ในการตรวจสอบอีเมล)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: 'Invalid email format' });
+    }
+
     // เข้ารหัสรหัสผ่านก่อนบันทึก
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
@@ -33,7 +44,7 @@ const registerUser = async (req, res) => {
     res.json({ message: 'User registered successfully', user, token });
   } catch (error) {
     console.error('Error during registration:', error);
-    res.status(500).json({ message: 'Error during registration', error });
+    res.status(500).json({ message: 'Error during registration', error: error.message });
   }
 };
 
@@ -47,8 +58,8 @@ const loginUser = async (req, res) => {
 
     let user = await User.findOne({ email });
     if (!user) {
-    console.log('User not found');
-    return res.status(400).json({ message: 'User not found' });
+      console.log('User not found');
+      return res.status(400).json({ message: 'User not found' });
     }
 
     console.log('Stored password (hashed):', user.password); // เพิ่มบรรทัดนี้
@@ -57,7 +68,7 @@ const loginUser = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     console.log('Password match:', isMatch);
     if (!isMatch) {
-    return res.status(400).json({ message: 'Invalid email or password' });
+      return res.status(400).json({ message: 'Invalid email or password' });
     }
 
     // อัปเดตข้อมูลการเข้าสู่ระบบ
@@ -70,7 +81,7 @@ const loginUser = async (req, res) => {
     res.json({ message: 'User logged in successfully', user, token });
   } catch (error) {
     console.error('Error during login:', error);
-    res.status(500).json({ message: 'Error during login', error });
+    res.status(500).json({ message: 'Error during login', error: error.message });
   }
 };
 

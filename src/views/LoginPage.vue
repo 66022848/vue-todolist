@@ -1,3 +1,90 @@
+<script>
+import Vue3DatePicker from "@vuepic/vue-datepicker";
+import "@vuepic/vue-datepicker/dist/main.css";
+import axios from "axios";
+import { GoogleLogin } from "vue3-google-login";
+
+export default {
+  name: "LoginPage",
+  components: { Vue3DatePicker, GoogleLogin },
+  data() {
+    return {
+      email: "",
+      password: "",
+      rememberMe: false,
+      selectedDate: null,
+      errorMessage: "",
+      loading: false,
+      clientId: "78375814370-mavksrobfsrn55o2u4nnksjcojj4mfmm.apps.googleusercontent.com"
+    };
+  },
+  methods: {
+    async handleLogin() {
+      this.errorMessage = "";
+      if (!this.email || !this.password) {
+        this.errorMessage = "Please enter both email and password.";
+        return;
+      }
+      try {
+        this.loading = true;
+        const response = await axios.post("http://localhost:3000/api/auth/login", {
+          email: this.email,
+          password: this.password,
+          rememberMe: this.rememberMe,
+        });
+        if (response.data.token) {
+          if (this.rememberMe) {
+            localStorage.setItem("user", JSON.stringify(response.data.user));
+            localStorage.setItem("token", response.data.token);
+          } else {
+            sessionStorage.setItem("user", JSON.stringify(response.data.user));
+            sessionStorage.setItem("token", response.data.token);
+          }
+          alert("Login Successful!");
+          this.$router.push("/dashboard/home");
+        }
+      } catch (error) {
+        console.error("Error during login:", error);
+        this.errorMessage = error.response?.data?.message || "Invalid email or password.";
+      } finally {
+        this.loading = false;
+      }
+    },
+    async onSuccess(response) {
+      console.log("Google Login Success:", response);
+      const { credential } = response; // รับ JWT Token จาก Google
+      try {
+        // ส่ง Token ไป Backend เพื่อทำ Authentication
+        const backendResponse = await axios.post("http://localhost:3000/api/auth/google-login", { token: credential });
+
+        // สมมติว่า Backend ส่งข้อมูลผู้ใช้กลับมา
+        const userData = backendResponse.data.user;
+        const userToken = backendResponse.data.token;
+
+        // ✅ บันทึกข้อมูลผู้ใช้ลง localStorage หรือ sessionStorage
+        localStorage.setItem("user", JSON.stringify(userData));
+        localStorage.setItem("token", userToken);
+
+        alert("Google Login Successful!");
+        this.$router.push("/dashboard/home"); // ✅ พาผู้ใช้ไปที่หน้า Dashboard
+      } catch (error) {
+        console.error("Google Login Error:", error);
+        this.errorMessage = "Google Login Failed!";
+      }
+    },
+    onFailure(error) {
+      console.log("Google Login Failed:", error);
+      alert("Google Login Failed!");
+    }
+  },
+  mounted() {
+    if (localStorage.getItem("user") && localStorage.getItem("token")) {
+      this.$router.push("/dashboard/home");
+    }
+  }
+};
+</script>
+
 <template>
   <div class="login-page">
     <!-- ส่วนซ้าย -->
@@ -29,7 +116,18 @@
             </label>
           </div>
           <button type="submit" class="login-btn">Sign in</button>
+
+          <!-- ✅ ปุ่ม Google Login -->
+          <GoogleLogin class="login-gg"
+            :clientId="clientId"
+            buttonText="Sign in with Google"
+            @success="onSuccess"
+            @failure="onFailure"
+            :cookiePolicy="'none'"
+            :isSignedIn="false"
+          />
         </form>
+
         <!-- แสดงข้อความข้อผิดพลาด -->
         <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
         <!-- ลิงก์ไปหน้าสมัครสมาชิก -->
@@ -40,69 +138,6 @@
     </div>
   </div>
 </template>
-
-<script>
-import Vue3DatePicker from "@vuepic/vue-datepicker";
-import "@vuepic/vue-datepicker/dist/main.css";
-import axios from "axios";
-
-export default {
-  name: "LoginPage",
-  components: { Vue3DatePicker },
-  data() {
-    return {
-      email: "",
-      password: "",
-      rememberMe: false,
-      selectedDate: null,
-      errorMessage: "",
-      loading: false, // เพิ่มตัวแปรสำหรับการโหลด
-    };
-  },
-  methods: {
-    async handleLogin() {
-      this.errorMessage = ""; // ล้างข้อความผิดพลาดก่อน
-      if (!this.email || !this.password) {
-        this.errorMessage = "Please enter both email and password.";
-        return;
-      }
-
-      try {
-        this.loading = true; // ตั้งสถานะเป็นกำลังโหลด
-        const response = await axios.post("http://localhost:3000/api/auth/login", {
-          email: this.email,
-          password: this.password,
-          rememberMe: this.rememberMe,
-        });
-
-        if (response.data.token) {
-          if (this.rememberMe) {
-            localStorage.setItem("user", JSON.stringify(response.data.user));
-            localStorage.setItem("token", response.data.token);
-          } else {
-            sessionStorage.setItem("user", JSON.stringify(response.data.user));
-            sessionStorage.setItem("token", response.data.token);
-          }
-
-          alert("Login Successful!");
-          this.$router.push("/dashboard/home");
-        }
-      } catch (error) {
-        console.error("Error during login:", error);
-        this.errorMessage = error.response?.data?.message || "Invalid email or password.";
-      } finally {
-        this.loading = false; // เมื่อเสร็จแล้ว
-      }
-    }
-  },
-  mounted() {
-    // ตรวจสอบข้อมูลใน localStorage หรือ sessionStorage เมื่อหน้าโหลด
-    if (localStorage.getItem("user") && localStorage.getItem("token")) {
-      this.$router.push("/dashboard/home");
-    }
-  }
-};
-</script>
 
 <style scoped>
 /* สไตล์การแสดงผลของหน้าจอ login */
@@ -208,6 +243,18 @@ input:focus {
   width: 100%;
   padding: 10px;
   background: #8ec5fc;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-bottom: 10px;
+  transition: background 0.3s ease;
+}
+
+.login-gg {
+  width: 100%;
+  background: #ffffff;
   color: white;
   border: none;
   border-radius: 5px;

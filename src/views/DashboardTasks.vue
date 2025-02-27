@@ -33,39 +33,39 @@ export default {
   methods: {
     async fetchTasks() {
       try {
-        const res = await axios.get("http://localhost:3000/tasks");
+        const res = await axios.get("http://localhost:3000/api/tasks");
         this.tasks = res.data;
       } catch (err) {
         console.error("Error fetching tasks:", err);
       }
     },
     async addTask() {
-    if (this.newTask.trim()) {
-      const newTask = {
-        name: this.newTask,  // ใช้ 'name' แทน 'text'
-        status: 'upcoming',  // ตั้งค่า default สำหรับ status
-      };
-      try {
-        const res = await axios.post("http://localhost:3000/tasks", newTask);
-        console.log('Task added:', res.data);  // ตรวจสอบว่าได้รับข้อมูลที่ถูกต้องจากเซิร์ฟเวอร์
-        this.tasks.push(res.data);
-        this.newTask = "";
-      } catch (error) {
-        console.error('Error adding task:', error); // แสดงข้อผิดพลาดที่เกิดขึ้น
+      if (this.newTask.trim()) {
+        const newTask = {
+          title: this.newTask,  // ใช้ 'title' แทน 'name'
+          status: 'upcoming',   // กำหนดสถานะเริ่มต้นเป็น 'upcoming'
+        };
+        try {
+          const res = await axios.post("http://localhost:3000/api/tasks", newTask);
+          console.log('Task added:', res.data);  // ตรวจสอบการตอบกลับจากเซิร์ฟเวอร์
+          this.tasks.push(res.data);
+          this.newTask = "";
+        } catch (error) {
+          console.error('Error adding task:', error); // แสดงข้อผิดพลาดหากมี
+        }
       }
-    }
-  },
+    },
     async toggleTask(task) {
       try {
         task.done = !task.done;
-        await axios.put(`http://localhost:3000/tasks/${task._id}`, task);
+        await axios.put(`http://localhost:3000/api/tasks/${task._id}`, task);
       } catch (err) {
         console.error("Error toggling task:", err);
       }
     },
     async removeTask(id) {
       try {
-        await axios.delete(`http://localhost:3000/tasks/${id}`);
+        await axios.delete(`http://localhost:3000/api/tasks/${id}`);
         this.tasks = this.tasks.filter(task => task._id !== id);
       } catch (err) {
         console.error("Error removing task:", err);
