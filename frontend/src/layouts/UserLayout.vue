@@ -30,6 +30,7 @@
             </ul>
           </div>
         </div>
+        <div v-else class="loading">Loading user data...</div>
       </div>
     </header>
 
@@ -61,7 +62,11 @@
     </aside>
 
     <div :class="['content', { 'content-shifted': isSidebarOpen }]">
-      <router-view></router-view>
+      <router-view v-if="user" />
+      <div v-else class="error-message">
+        <p>Failed to load user data. Please try logging in again.</p>
+        <button @click="$router.push('/login')">Go to Login</button>
+      </div>
     </div>
   </div>
 </template>
@@ -86,27 +91,40 @@ export default {
     },
   },
   async mounted() {
-    try {
-      const response = await api.get('/api/user');
-      console.log('API Response:', response.data);
-      const userData = response.data.user;
-
-      if (!userData) {
-        this.$router.push('/login');
-        return;
-      }
-
-      this.user = {
-        name: userData.username || 'Unnamed User',
-        email: userData.email,
-        picture: userData.picture || null,
-      };
-    } catch (error) {
-      console.error('Error fetching user data:', error);
-      this.$router.push('/login');
-    }
+    await this.fetchUser();
   },
   methods: {
+    async fetchUser() {
+      try {
+        const sessionId = localStorage.getItem('sessionId');
+        if (!sessionId) {
+          console.log('No sessionId found in localStorage');
+          this.$router.push('/login');
+          return;
+        }
+
+        const response = await api.get('/api/user');
+        console.log('API Response:', response.data);
+        const userData = response.data.user;
+
+        if (!userData) {
+          console.log('No user data in response');
+          localStorage.removeItem('sessionId');
+          this.$router.push('/login');
+          return;
+        }
+
+        this.user = {
+          name: userData.username || 'Unnamed User',
+          email: userData.email,
+          picture: userData.picture || null,
+        };
+      } catch (error) {
+        console.error('Error fetching user data:', error.response?.data || error.message);
+        localStorage.removeItem('sessionId');
+        this.$router.push('/login');
+      }
+    },
     toggleSidebar() {
       this.isSidebarOpen = !this.isSidebarOpen;
     },
@@ -120,6 +138,7 @@ export default {
     async logout() {
       try {
         await api.post('/api/auth/logout');
+        localStorage.removeItem('sessionId');
         alert('Logged out successfully!');
         this.$router.push('/login');
       } catch (error) {
@@ -175,4 +194,7 @@ export default {
 .dropdown-menu li { padding: 8px 12px; cursor: pointer; font-size: 14px; color: #333; }
 .dropdown-menu li:hover { background-color: #f5f5f5; }
 .plus-button { display: flex; justify-content: center; align-items: center; margin-bottom: 20px; }
+.loading { color: #666; font-size: 14px; }
+.error-message { text-align: center; padding: 20px; color: red; }
+.error-message button { padding: 8px 16px; background: #C9B6D7; color: white; border: none; border-radius: 5px; cursor: pointer; }
 </style>

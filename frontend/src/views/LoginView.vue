@@ -1,7 +1,6 @@
 <template>
   <div class="login-page">
-    <div class="login-left">
-    </div>
+    <div class="login-left"></div>
     <div class="login-right">
       <div class="login-box">
         <h2>SIGN IN</h2>
@@ -50,9 +49,15 @@ export default {
   },
   mounted() {
     this.checkSession();
-    // จัดการ Google callback ถ้ามีการ redirect
-    if (window.location.search.includes('code')) {
-      this.handleGoogleCallback();
+    // จัดการ Google OAuth callback
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get('sessionId');
+    if (sessionId) {
+      localStorage.setItem('sessionId', sessionId);
+      console.log('เก็บ sessionId จาก Google callback:', sessionId);
+      this.$router.push('/dashboard/home');
+      // ลบ query string ออกจาก URL
+      window.history.replaceState({}, document.title, window.location.pathname);
     }
   },
   methods: {
@@ -69,45 +74,22 @@ export default {
     googleLogin() {
       window.location.href = `${this.API_BASE_URL}/api/auth/google`;
     },
-    async handleGoogleCallback() {
-      try {
-        const response = await api.get('/api/auth/google/callback', {
-          headers: {
-            'Authorization': `Session ${localStorage.getItem('sessionId') || ''}`
-          }
-        });
-        if (response.data.sessionId) {
-          localStorage.setItem('sessionId', response.data.sessionId);
-          console.log('เก็บ sessionId:', localStorage.getItem('sessionId'));
-          this.$router.push('/dashboard/home');
-        } else {
-          console.error('ไม่มี sessionId ใน Google callback response');
-          this.errorMessage = 'การเข้าสู่ระบบด้วย Google ล้มเหลว';
-        }
-      } catch (error) {
-        console.error('ข้อผิดพลาดการเข้าสู่ระบบด้วย Google:', error.response ? error.response.data : error.message);
-        this.errorMessage = 'การเข้าสู่ระบบด้วย Google ล้มเหลว กรุณาลองใหม่';
-      }
-    },
     goToRegister() {
       this.$router.push('/register');
     },
     async handleLogin() {
       try {
+        this.errorMessage = '';
         const response = await api.post('/api/auth/login', {
           email: this.email,
           password: this.password,
         });
-        if (response.data.sessionId) {
-          localStorage.setItem('sessionId', response.data.sessionId);
-          console.log('เก็บ sessionId:', localStorage.getItem('sessionId'));
-          this.$router.push('/dashboard/home');
-        } else {
-          this.errorMessage = 'การเข้าสู่ระบบล้มเหลว ไม่ได้รับ session ID';
-        }
+        localStorage.setItem('sessionId', response.data.sessionId);
+        console.log('Login successful, sessionId:', response.data.sessionId);
+        this.$router.push('/dashboard/home');
       } catch (error) {
-        console.error('ข้อผิดพลาดการเข้าสู่ระบบ:', error.response ? error.response.data : error.message);
-        this.errorMessage = error.response?.data?.message || 'การเข้าสู่ระบบล้มเหลว กรุณาตรวจสอบข้อมูล';
+        console.error('ข้อผิดพลาดการเข้าสู่ระบบ:', error.response?.data || error.message);
+        this.errorMessage = error.response?.data?.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ';
       }
     },
   },

@@ -17,30 +17,35 @@ exports.googleCallback = [
         throw new Error('No user data after authentication');
       }
 
-      req.session.user = {
-        id: req.user._id,
-        email: req.user.email,
-        username: req.user.username,
-        picture: req.user.picture,
-      };
+      // ตรวจสอบและสร้าง/อัปเดตผู้ใช้ใน MongoDB
+      let user = await User.findOne({ email: req.user.email });
+      if (!user) {
+        user = new User({
+          email: req.user.email,
+          username: req.user.displayName,
+          picture: req.user.picture,
+        });
+        await user.save();
+      }
 
-      await req.session.save((err) => {
-        if (err) {
-          console.error('Session save error:', err);
-          throw err;
-        }
-        console.log('Session saved successfully, sessionID:', req.sessionID);
+      // ตั้งค่า session
+      req.session.userId = user._id; // ใช้ userId เพื่อสอดคล้องกับ getUser
+      await new Promise((resolve, reject) => {
+        req.session.save((err) => {
+          if (err) reject(err);
+          else resolve();
+        });
       });
+      console.log('Session saved successfully, sessionID:', req.session.id);
 
-      res.json({
-        user: req.session.user,
-        sessionId: req.sessionID
-      });
+      // Redirect ไป frontend พร้อม sessionId
+      const redirectUrl = `https://66022848.github.io/vue-todolist/login?sessionId=${req.session.id}`;
+      res.redirect(redirectUrl);
     } catch (error) {
       console.error('Google Callback Error:', error.message, error.stack);
       res.status(500).json({ message: 'Authentication failed' });
     }
-  }
+  },
 ];
 
 exports.login = async (req, res) => {
@@ -92,24 +97,19 @@ exports.register = async (req, res) => {
 
     await newUser.save();
 
-    req.session.user = {
-      id: newUser._id,
-      email: newUser.email,
-      username: newUser.username,
-    };
-
-    await req.session.save((err) => {
-      if (err) {
-        console.error('Session save error:', err);
-        throw err;
-      }
-      console.log('Session saved successfully, sessionID:', req.sessionID);
+    req.session.userId = newUser._id; // ใช้ userId เพื่อสอดคล้องกับ getUser
+    await new Promise((resolve, reject) => {
+      req.session.save((err) => {
+        if (err) reject(err);
+        else resolve();
+      });
     });
+    console.log('Session saved successfully, sessionID:', req.session.id);
 
     res.status(201).json({
       message: 'User registered successfully',
-      user: req.session.user,
-      sessionId: req.sessionID
+      user: { id: newUser._id, email: newUser.email, username: newUser.username },
+      sessionId: req.session.id,
     });
   } catch (error) {
     console.error('Registration error:', error);
