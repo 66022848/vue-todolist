@@ -36,7 +36,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import api from '@/api';
 
 export default {
   data() {
@@ -45,7 +45,7 @@ export default {
       password: '',
       rememberMe: false,
       errorMessage: '',
-      API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'https://vue-todolist-backend.onrender.com', // Fallback URL
+      API_BASE_URL: import.meta.env.VITE_API_URL || 'https://vue-todolist-backend.onrender.com',
     };
   },
   mounted() {
@@ -54,7 +54,7 @@ export default {
   methods: {
     async checkSession() {
       try {
-        const response = await axios.get(`${this.API_BASE_URL}/api/user`, { withCredentials: true });
+        const response = await api.get('/api/user');
         if (response.data.user) {
           this.$router.push('/dashboard/home');
         }
@@ -70,13 +70,12 @@ export default {
     },
     async handleLogin() {
       try {
-        const response = await axios.post(
-          `${this.API_BASE_URL}/api/auth/login`,
+        const response = await api.post(
+          '/api/auth/login',
           {
             email: this.email,
             password: this.password,
-          },
-          { withCredentials: true }
+          }
         );
 
         console.log('Login successful:', response.data);

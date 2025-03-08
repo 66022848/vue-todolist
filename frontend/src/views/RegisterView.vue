@@ -39,7 +39,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import api from '@/api';
 
 export default {
   name: "RegisterPage",
@@ -50,7 +50,6 @@ export default {
       password: '',
       agreeToTerms: false,
       errorMessage: '',
-      API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'https://vue-todolist-backend.onrender.com', // Fallback URL
     };
   },
   methods: {
@@ -66,14 +65,13 @@ export default {
       }
 
       try {
-        const response = await axios.post(
-          `${this.API_BASE_URL}/api/auth/register`,
+        const response = await api.post(
+          '/api/auth/register',
           {
             email: this.email,
             username: this.username,
             password: this.password,
-          },
-          { withCredentials: true }
+          }
         );
 
         console.log('Register successful:', response.data);

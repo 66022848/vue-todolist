@@ -67,7 +67,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import api from '@/api';
 
 export default {
   name: "UserLayout",
@@ -78,7 +78,6 @@ export default {
       isSidebarOpen: false,
       selectedMenu: "home",
       defaultProfilePicture: '/src/assets/default-profile.png',
-      API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'https://vue-todolist-backend.onrender.com', // Fallback URL
     };
   },
   computed: {
@@ -88,7 +87,7 @@ export default {
   },
   async mounted() {
     try {
-      const response = await axios.get(`${this.API_BASE_URL}/api/user`, { withCredentials: true });
+      const response = await api.get('/api/user');
       console.log('API Response:', response.data);
       const userData = response.data.user;
 
@@ -120,7 +119,7 @@ export default {
     },
     async logout() {
       try {
-        await axios.post(`${this.API_BASE_URL}/api/auth/logout`, {}, { withCredentials: true });
+        await api.post('/api/auth/logout');
         alert('Logged out successfully!');
         this.$router.push('/login');
       } catch (error) {

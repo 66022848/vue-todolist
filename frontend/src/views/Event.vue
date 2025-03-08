@@ -64,6 +64,7 @@
 </template>
 
 <script>
+import api from '@/api';
 import VueDatePicker from "@vuepic/vue-datepicker";
 import "@vuepic/vue-datepicker/dist/main.css";
 import { emitter } from '@/eventBus';
@@ -83,11 +84,10 @@ export default {
       eventURL: "",
       selectedColor: "#01579B",
       colors: ['#01579B', '#FFCDD2', '#FFE57F', '#B9F6CA', '#B3E5FC'],
-      API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'https://vue-todolist-backend.onrender.com', // Fallback URL
     };
   },
   methods: {
-    saveEvent() {
+    async saveEvent() {
       const eventData = {
         title: this.title,
         type: "Event",
@@ -104,30 +104,18 @@ export default {
         }
       };
 
-      fetch(`${this.API_BASE_URL}/api/quest`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(eventData),
-        credentials: 'include',
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(response.statusText || 'Failed to save event');
-        }
-        return response.json();
-      })
-      .then(data => {
-        console.log('Data saved:', data);
-        alert(`Event บันทึกสำเร็จ! คุณได้รับ 10 คะแนน รวม: ${data.points} คะแนน`);
+      try {
+        const response = await api.post('/api/quest', eventData);
+        console.log('Data saved:', response.data);
+        alert(`Event บันทึกสำเร็จ! คุณได้รับ 10 คะแนน รวม: ${response.data.points} คะแนน`);
         this.$router.push('/dashboard/done');
         this.$nextTick(() => {
           emitter.emit('refresh-dashboard');
         });
-      })
-      .catch(err => {
+      } catch (err) {
         console.error('Error saving event:', err);
         alert('เกิดข้อผิดพลาดในการบันทึก event: ' + err.message);
-      });
+      }
     },
     goBack() {
       this.$router.push("/dashboard/createquest");
