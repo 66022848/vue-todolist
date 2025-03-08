@@ -4,7 +4,7 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [vue()],
-  base: '/vue-todolist/',
+  base: process.env.NODE_ENV === 'production' ? '/vue-todolist/' : '/',
   server: {
     proxy: {
       '/api': {

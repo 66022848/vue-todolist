@@ -33,7 +33,7 @@ module.exports = session({
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
     maxAge: 1000 * 60 * 60 * 24,
-    sameSite: 'lax',
+    sameSite: 'none',
     domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined,
   },
 });

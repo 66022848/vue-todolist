@@ -7,12 +7,12 @@ import DashboardTasks from '../views/DashboardTasks.vue';
 import DashboardAwards from '../views/DashboardAwards.vue';
 import DashboardSettings from '../views/DashboardSettings.vue';
 import UserLayout from '../layouts/UserLayout.vue';
-import Modal from "../views/Modal.vue";
-import Color from "../views/Color.vue";
-import CreateQuest from "../views/CreateQuest.vue";
-import Event from "../views/Event.vue";
-import Memo from "../views/Memo.vue";
-import Done from "../views/Done.vue";
+import Modal from '../views/Modal.vue';
+import Color from '../views/Color.vue';
+import CreateQuest from '../views/CreateQuest.vue';
+import Event from '../views/Event.vue';
+import Memo from '../views/Memo.vue';
+import Done from '../views/Done.vue';
 
 const routes = [
   { path: '/', component: LoginView },
@@ -35,10 +35,11 @@ const routes = [
       { path: 'done', component: Done, name: 'done' },
     ],
   },
+  { path: '/:pathMatch(.*)*', redirect: '/' },
 ];
 
 const router = createRouter({
-  history: createWebHistory('/vue-todolist/'),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes,
 });
 
