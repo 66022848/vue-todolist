@@ -77,7 +77,7 @@ export default {
     async fetchUserData() {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:3001/api/user', {
+        const response = await axios.get('https://vue-todolist-backend.onrender.com/api/user', {
           withCredentials: true,
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
@@ -138,7 +138,7 @@ export default {
           formData.append('picture', this.uploadedFile);
         }
 
-        const response = await axios.put('http://localhost:3001/api/user/update', formData, {
+        const response = await axios.put('https://vue-todolist-backend.onrender.com/api/user/update', formData, {
           withCredentials: true,
           headers: {
             Authorization: `Bearer ${token}`,

@@ -66,7 +66,7 @@ export default {
 
       try {
         const response = await axios.post(
-          'http://localhost:3001/api/auth/register',
+          'https://vue-todolist-backend.onrender.com/api/auth/register',
           {
             email: this.email,
             username: this.username,

@@ -3,44 +3,33 @@ import vue from '@vitejs/plugin-vue';
 import path from 'path';
 
 export default defineConfig({
-<<<<<<< HEAD
-  base: '/vue-todolist/',
   plugins: [vue()],
-=======
-  plugins: [vue()],
-  base: '/vue-todolist/',
->>>>>>> gh-pages
+  base: '/vue-todolist/', // สำหรับ GitHub Pages
   server: {
     proxy: {
-      '/auth': 'http://localhost:3001',
-    }
+      '/api': 'http://localhost:3001', // ใช้ตอนพัฒนา
+    },
   },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
-    }
+    },
   },
   css: {
     postcss: './postcss.config.js',
   },
   build: {
     outDir: 'dist',
-<<<<<<< HEAD
     assetsDir: 'assets',
     rollupOptions: {
       output: {
+        assetFileNames: 'assets/[name].[hash].[ext]',
         chunkFileNames: 'assets/[name].[hash].js',
         entryFileNames: 'assets/[name].[hash].js',
-        assetFileNames: 'assets/[name].[hash].[ext]'
-=======
-    assetsDir: 'a',
-    rollupOptions: {
-      output: {
-        assetFileNames: 'assets/[name].[hash:6].[ext]',
-        chunkFileNames: 'assets/[name].[hash:6].js',
-        entryFileNames: 'assets/[name].[hash:6].js',
->>>>>>> gh-pages
-      }
-    }
-  }
+      },
+    },
+  },
+  define: {
+    'process.env': {}, // เพื่อให้โค้ดที่ใช้ process.env ทำงานได้
+  },
 });

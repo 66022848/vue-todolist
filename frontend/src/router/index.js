@@ -19,7 +19,7 @@ const routes = [
   { path: '/login', component: LoginView },
   { path: '/register', component: RegisterView },
   {
-    path: '/dashboard', 
+    path: '/dashboard',
     component: UserLayout,
     children: [
       { path: 'home', component: DashboardHome, name: 'home' },
@@ -33,19 +33,13 @@ const routes = [
       { path: 'event', component: Event, name: 'event' },
       { path: 'memo', component: Memo, name: 'memo' },
       { path: 'done', component: Done, name: 'done' },
-    ]
-<<<<<<< HEAD
+    ],
   },
-=======
-  },{
-    base: '/vue-todolist'
-  }
->>>>>>> gh-pages
 ];
 
 const router = createRouter({
   history: createWebHistory('/vue-todolist/'),
-  routes
+  routes,
 });
 
 export default router;

@@ -14,7 +14,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 .catch((err) => console.log('MongoDB connection error:', err));
 
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://66022848.github.io'],
+  origin: ['http://localhost:5173', 'https://66022848.github.io/vue-todolist'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']

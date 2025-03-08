@@ -70,6 +70,8 @@
 import axios from 'axios';
 import { RouterLink, RouterView } from 'vue-router';
 
+const apiUrl = process.env.VUE_APP_API_URL || 'http://localhost:3001/api';
+
 export default {
   name: "UserLayout",
   data() {
@@ -88,7 +90,7 @@ export default {
   },
   async mounted() {
     try {
-      const response = await axios.get('http://localhost:3001/api/user', { withCredentials: true });
+      const response = await axios.get(`${apiUrl}/user`, { withCredentials: true });
       console.log('API Response:', response.data);
       const userData = response.data.user;
 
@@ -120,7 +122,7 @@ export default {
     },
     async logout() {
       try {
-        await axios.post('http://localhost:3001/api/auth/logout', {}, { withCredentials: true });
+        await axios.post(`${apiUrl}/auth/logout`, {}, { withCredentials: true });
         alert('Logged out successfully!');
         this.$router.push('/login');
       } catch (error) {
