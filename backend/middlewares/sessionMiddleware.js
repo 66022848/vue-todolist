@@ -11,6 +11,8 @@ if (process.env.NODE_ENV === 'production' && process.env.REDIS_URL) {
   });
   redisClient.on('error', (err) => {
     console.error('Redis Client Error:', err);
+    store = new session.MemoryStore();
+    console.warn('Redis failed, falling back to MemoryStore');
   });
 
   store = new RedisStore({
@@ -30,8 +32,8 @@ module.exports = session({
   cookie: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
-    maxAge: 1000 * 60 * 60 * 24, // 1 วัน
+    maxAge: 1000 * 60 * 60 * 24,
     sameSite: 'lax',
-    domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined, // ปรับให้ครอบคลุม subdomain
+    domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined,
   },
 });

@@ -4,13 +4,16 @@ const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 
-// กำหนด Google Strategy
 passport.use(new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
   callbackURL: process.env.GOOGLE_REDIRECT_URL,
 }, async (accessToken, refreshToken, profile, done) => {
   try {
+    if (!profile.id || !profile.emails || !profile.emails.length) {
+      throw new Error('Incomplete Google profile data');
+    }
+
     const existingUser = await User.findOne({ googleId: profile.id });
 
     if (existingUser) {
@@ -19,20 +22,19 @@ passport.use(new GoogleStrategy({
 
     const newUser = new User({
       googleId: profile.id,
-      username: profile.displayName,
+      username: profile.displayName || `User_${profile.id}`,
       email: profile.emails[0].value,
-      picture: profile.photos[0].value,
+      picture: profile.photos && profile.photos.length ? profile.photos[0].value : null,
     });
 
     await newUser.save();
     return done(null, newUser);
   } catch (error) {
-    console.error('Google Strategy Error:', error);
+    console.error('Google Strategy Error:', error.message, error.stack);
     return done(error, false);
   }
 }));
 
-// กำหนด Local Strategy
 passport.use(new LocalStrategy({
   usernameField: 'email',
   passwordField: 'password',
@@ -55,7 +57,6 @@ passport.use(new LocalStrategy({
   }
 }));
 
-// Serialize และ Deserialize
 passport.serializeUser((user, done) => {
   done(null, user.id);
 });
@@ -70,4 +71,4 @@ passport.deserializeUser(async (id, done) => {
   }
 });
 
-module.exports = passport; // Export passport
+module.exports = passport;

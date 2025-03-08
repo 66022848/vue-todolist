@@ -1,6 +1,6 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
-const passport = require('../config/passport'); // นำเข้า passport จาก config
+const passport = require('../config/passport');
 
 exports.googleLogin = passport.authenticate('google', {
   scope: ['profile', 'email'],
@@ -12,7 +12,10 @@ exports.googleCallback = [
   }),
   async (req, res) => {
     try {
-      // หลังจาก Google auth สำเร็จ
+      if (!req.user) {
+        throw new Error('No user data after authentication');
+      }
+
       req.session.user = {
         id: req.user._id,
         email: req.user.email,
@@ -20,16 +23,16 @@ exports.googleCallback = [
         picture: req.user.picture,
       };
 
+      await req.session.save();
       console.log('Session data after Google Login:', req.session.user);
       res.redirect('https://66022848.github.io/vue-todolist/dashboard/home');
     } catch (error) {
-      console.error('Google Callback Error:', error);
+      console.error('Google Callback Error:', error.message, error.stack);
       res.redirect('https://66022848.github.io/vue-todolist/login?error=auth_failed');
     }
   }
 ];
 
-// คงส่วนอื่น ๆ ไว้ (login, register, logout) เพราะไม่มีปัญหา
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
