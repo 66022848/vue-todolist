@@ -10,14 +10,24 @@ const app = express();
 
 // การเชื่อมต่อ MongoDB พร้อมการ Retry
 async function connectDB() {
+  const options = {
+    serverSelectionTimeoutMS: 30000, // เพิ่ม timeout เป็น 30 วินาที
+    heartbeatFrequencyMS: 10000, // ตรวจสอบการเชื่อมต่อทุก 10 วินาที
+    maxPoolSize: 10, // จำนวนการเชื่อมต่อสูงสุด
+  };
+
   try {
-    await mongoose.connect(process.env.MONGODB_URI);
+    await mongoose.connect(process.env.MONGODB_URI, options);
     console.log('เชื่อมต่อกับ MongoDB สำเร็จ');
   } catch (err) {
     console.error('ข้อผิดพลาดการเชื่อมต่อ MongoDB:', err);
-    setTimeout(connectDB, 5000);
+    setTimeout(connectDB, 5000); // ลองเชื่อมใหม่ทุก 5 วินาที
   }
 }
+
+connectDB();
+
+module.exports = mongoose;
 
 // การตั้งค่า CORS
 const corsOptions = {

@@ -47,7 +47,7 @@ exports.login = async (req, res) => {
   try {
     console.log('Login attempt:', { email: req.body.email, password: req.body.password });
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).lean(); // ใช้ lean() เพื่อลดการโหลดข้อมูล
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ message: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
@@ -56,7 +56,6 @@ exports.login = async (req, res) => {
     req.session.userId = user._id;
     console.log('Session saved successfully, sessionID:', req.session.id);
 
-    // บันทึก session ลง Redis (ถ้าใช้)
     if (req.sessionStore && typeof req.sessionStore.set === 'function') {
       await new Promise((resolve, reject) => {
         req.sessionStore.set(req.session.id, req.session, (err) => {
@@ -69,6 +68,9 @@ exports.login = async (req, res) => {
     res.json({ sessionId: req.session.id, user: { id: user._id, email: user.email } });
   } catch (error) {
     console.error('Login error:', error);
+    if (error.name === 'MongoNetworkError' || error.message.includes('timed out')) {
+      return res.status(503).json({ message: 'เซิร์ฟเวอร์ฐานข้อมูลชั่วคราวไม่พร้อมใช้งาน', error: error.message });
+    }
     res.status(500).json({ message: 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ', error: error.message });
   }
 };
