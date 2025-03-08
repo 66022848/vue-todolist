@@ -68,8 +68,6 @@ import VueDatePicker from "@vuepic/vue-datepicker";
 import "@vuepic/vue-datepicker/dist/main.css";
 import { emitter } from '@/eventBus';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
 export default {
   components: { VueDatePicker },
   data() {
@@ -84,7 +82,8 @@ export default {
       address: "",
       eventURL: "",
       selectedColor: "#01579B",
-      colors: ['#01579B', '#FFCDD2', '#FFE57F', '#B9F6CA', '#B3E5FC']
+      colors: ['#01579B', '#FFCDD2', '#FFE57F', '#B9F6CA', '#B3E5FC'],
+      API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'https://vue-todolist-backend.onrender.com', // Fallback URL
     };
   },
   methods: {
@@ -105,7 +104,7 @@ export default {
         }
       };
 
-      fetch('${API_BASE_URL}/api/quest', {
+      fetch(`${this.API_BASE_URL}/api/quest`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(eventData),

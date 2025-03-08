@@ -18,65 +18,64 @@
   </template>
   
   <script>
-  import axios from "axios";
-  
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import axios from "axios";
 
-  export default {
-    name: "DashboardTasks",
-    data() {
-      return {
-        newTask: "",
-        tasks: [],
-      };
+export default {
+  name: "DashboardTasks",
+  data() {
+    return {
+      newTask: "",
+      tasks: [],
+      API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'https://vue-todolist-backend.onrender.com', // Fallback URL
+    };
+  },
+  methods: {
+    async fetchTasks() {
+      try {
+        const res = await axios.get(`${this.API_BASE_URL}/api/tasks`, { withCredentials: true });
+        this.tasks = res.data;
+      } catch (err) {
+        console.error("Error fetching tasks:", err);
+      }
     },
-    methods: {
-      async fetchTasks() {
+    async addTask() {
+      if (this.newTask.trim()) {
+        const newTask = {
+          title: this.newTask,
+          status: 'upcoming',
+        };
         try {
-          const res = await axios.get("${API_BASE_URL}/api/tasks");
-          this.tasks = res.data;
-        } catch (err) {
-          console.error("Error fetching tasks:", err);
+          const res = await axios.post(`${this.API_BASE_URL}/api/tasks`, newTask, { withCredentials: true });
+          console.log('Task added:', res.data);
+          this.tasks.push(res.data);
+          this.newTask = "";
+        } catch (error) {
+          console.error('Error adding task:', error);
         }
-      },
-      async addTask() {
-        if (this.newTask.trim()) {
-          const newTask = {
-            title: this.newTask,
-            status: 'upcoming',
-          };
-          try {
-            const res = await axios.post("${API_BASE_URL}/api/tasks", newTask);
-            console.log('Task added:', res.data);
-            this.tasks.push(res.data);
-            this.newTask = "";
-          } catch (error) {
-            console.error('Error adding task:', error);
-          }
-        }
-      },
-      async toggleTask(task) {
-        try {
-          task.done = !task.done;
-          await axios.put(`${API_BASE_URL}/api/tasks/${task._id}`, task);
-        } catch (err) {
-          console.error("Error toggling task:", err);
-        }
-      },
-      async removeTask(id) {
-        try {
-          await axios.delete(`${API_BASE_URL}/api/tasks/${id}`);
-          this.tasks = this.tasks.filter(task => task._id !== id);
-        } catch (err) {
-          console.error("Error removing task:", err);
-        }
-      },
+      }
     },
-    mounted() {
-      this.fetchTasks();
+    async toggleTask(task) {
+      try {
+        task.done = !task.done;
+        await axios.put(`${this.API_BASE_URL}/api/tasks/${task._id}`, task, { withCredentials: true });
+      } catch (err) {
+        console.error("Error toggling task:", err);
+      }
     },
-  };
-  </script>
+    async removeTask(id) {
+      try {
+        await axios.delete(`${this.API_BASE_URL}/api/tasks/${id}`, { withCredentials: true });
+        this.tasks = this.tasks.filter(task => task._id !== id);
+      } catch (err) {
+        console.error("Error removing task:", err);
+      }
+    },
+  },
+  mounted() {
+    this.fetchTasks();
+  },
+};
+</script>
   
   <style scoped>
   .dashboard-tasks {

@@ -54,8 +54,6 @@
 <script>
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
 export default {
   name: 'DashboardSettings',
   data() {
@@ -69,7 +67,8 @@ export default {
       loading: true,
       isEditing: false,
       previewImage: null,
-      uploadedFile: null
+      uploadedFile: null,
+      API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'https://vue-todolist-backend.onrender.com', // Fallback URL
     };
   },
   created() {
@@ -79,7 +78,7 @@ export default {
     async fetchUserData() {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('${API_BASE_URL}/api/user', {
+        const response = await axios.get(`${this.API_BASE_URL}/api/user`, {
           withCredentials: true,
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
@@ -140,7 +139,7 @@ export default {
           formData.append('picture', this.uploadedFile);
         }
 
-        const response = await axios.put('https://vue-todolist-backend.onrender.com/api/user/update', formData, {
+        const response = await axios.put(`${this.API_BASE_URL}/api/user/update`, formData, {
           withCredentials: true,
           headers: {
             Authorization: `Bearer ${token}`,

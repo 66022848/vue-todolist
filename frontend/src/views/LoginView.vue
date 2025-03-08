@@ -38,8 +38,6 @@
 <script>
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
 export default {
   data() {
     return {
@@ -47,6 +45,7 @@ export default {
       password: '',
       rememberMe: false,
       errorMessage: '',
+      API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'https://vue-todolist-backend.onrender.com', // Fallback URL
     };
   },
   mounted() {
@@ -55,7 +54,7 @@ export default {
   methods: {
     async checkSession() {
       try {
-        const response = await axios.get('${API_BASE_URL}/api/user', { withCredentials: true });
+        const response = await axios.get(`${this.API_BASE_URL}/api/user`, { withCredentials: true });
         if (response.data.user) {
           this.$router.push('/dashboard/home');
         }
@@ -64,7 +63,7 @@ export default {
       }
     },
     googleLogin() {
-      window.location.href = '${API_BASE_URL}/api/auth/google';
+      window.location.href = `${this.API_BASE_URL}/api/auth/google`;
     },
     goToRegister() {
       this.$router.push('/register');
@@ -72,7 +71,7 @@ export default {
     async handleLogin() {
       try {
         const response = await axios.post(
-          '${API_BASE_URL}/api/auth/login',
+          `${this.API_BASE_URL}/api/auth/login`,
           {
             email: this.email,
             password: this.password,

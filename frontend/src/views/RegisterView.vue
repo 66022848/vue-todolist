@@ -41,8 +41,6 @@
 <script>
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
 export default {
   name: "RegisterPage",
   data() {
@@ -52,6 +50,7 @@ export default {
       password: '',
       agreeToTerms: false,
       errorMessage: '',
+      API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'https://vue-todolist-backend.onrender.com', // Fallback URL
     };
   },
   methods: {
@@ -68,7 +67,7 @@ export default {
 
       try {
         const response = await axios.post(
-          '${API_BASE_URL}/api/auth/register',
+          `${this.API_BASE_URL}/api/auth/register`,
           {
             email: this.email,
             username: this.username,
