@@ -23,14 +23,19 @@ exports.googleCallback = [
         picture: req.user.picture,
       };
 
-      await req.session.save();
+      await req.session.save((err) => {
+        if (err) {
+          console.error('Session save error:', err);
+          throw err;
+        }
+        console.log('Session saved successfully, sessionID:', req.sessionID);
+      });
 
       res.cookie('connect.sid', req.sessionID, {
         sameSite: 'none',
         secure: true,
         httpOnly: true,
         maxAge: 1000 * 60 * 60 * 24,
-        domain: '.onrender.com',
       });
 
       console.log('Session data after Google Login:', req.session.user);
@@ -63,7 +68,13 @@ exports.login = async (req, res) => {
       picture: user.picture,
     };
 
-    await req.session.save();
+    await req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        throw err;
+      }
+      console.log('Session saved successfully, sessionID:', req.sessionID);
+    });
 
     res.cookie('connect.sid', req.sessionID, {
       sameSite: 'none',

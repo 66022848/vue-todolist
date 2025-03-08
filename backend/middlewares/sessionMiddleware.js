@@ -34,6 +34,6 @@ module.exports = session({
     httpOnly: true,
     maxAge: 1000 * 60 * 60 * 24,
     sameSite: 'none',
-    domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined,
+    domain: undefined,
   },
 });
