@@ -50,6 +50,7 @@ export default {
   },
   mounted() {
     this.checkSession();
+    console.log('Mounted, this.$api:', this.$api);
   },
   methods: {
     async checkSession() {
@@ -85,6 +86,7 @@ export default {
     },
     async handleLogin() {
       try {
+        console.log('Calling login with this.$api:', this.$api);
         const response = await this.$api.post('/api/auth/login', {
           email: this.email,
           password: this.password,

@@ -6,8 +6,11 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faCalendarAlt, faCalendar, faClock } from '@fortawesome/free-regular-svg-icons';
+import api from './src/api';
 
 library.add(faCalendarAlt, faCalendar, faClock);
+
+app.config.globalProperties.$api = api;
 
 const app = createApp(App);
 app.component('font-awesome-icon', FontAwesomeIcon);
