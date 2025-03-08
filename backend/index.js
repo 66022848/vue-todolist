@@ -8,23 +8,36 @@ require('dotenv').config();
 
 const app = express();
 
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log('Connected to MongoDB'))
-.catch((err) => console.error('MongoDB connection error:', err));
+// การเชื่อมต่อ MongoDB พร้อมการ Retry
+async function connectDB() {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log('เชื่อมต่อกับ MongoDB สำเร็จ');
+  } catch (err) {
+    console.error('ข้อผิดพลาดการเชื่อมต่อ MongoDB:', err);
+    setTimeout(connectDB, 5000); // ลองใหม่ทุก 5 วินาที
+  }
+}
+connectDB();
 
-app.use(cors({
+// การตั้งค่า CORS
+const corsOptions = {
   origin: [
     'http://localhost:5173',
     'https://66022848.github.io',
     'https://66022848.github.io/vue-todolist'
   ],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 200 // บาง browser รุ่นเก่ามีปัญหากับสถานะ 204
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // เปิดใช้งาน pre-flight requests
 
 app.use(express.json());
 app.use(sessionMiddleware);
@@ -33,7 +46,7 @@ app.use(passport.initialize());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to vue-todolist-backend API! Use /api/... for endpoints.' });
+  res.json({ message: 'ยินดีต้อนรับสู่ vue-todolist-backend API! ใช้ /api/... สำหรับ endpoints.' });
 });
 
 app.use('/api/auth', require('./routes/auth'));
@@ -42,4 +55,12 @@ app.use('/api/quest', require('./routes/quest'));
 app.use('/api/tasks', require('./routes/tasks'));
 
 const port = process.env.PORT || 3001;
-app.listen(port, () => console.log(`Backend running on port ${port}`));
+app.listen(port, () => {
+  console.log(`Backend ทำงานบนพอร์ต ${port}`);
+});
+
+// Middleware จัดการข้อผิดพลาด
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'เกิดข้อผิดพลาดบางอย่าง!', error: err.message });
+});

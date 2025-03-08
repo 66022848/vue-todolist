@@ -50,7 +50,10 @@ export default {
   },
   mounted() {
     this.checkSession();
-    console.log('Mounted, this.$api:', this.$api);
+    // จัดการ Google callback ถ้ามีการ redirect
+    if (window.location.search.includes('code')) {
+      this.handleGoogleCallback();
+    }
   },
   methods: {
     async checkSession() {
@@ -60,7 +63,7 @@ export default {
           this.$router.push('/dashboard/home');
         }
       } catch (error) {
-        console.log('No active session found:', error.message);
+        console.log('ไม่พบ session ที่ใช้งาน:', error.message);
       }
     },
     googleLogin() {
@@ -68,17 +71,22 @@ export default {
     },
     async handleGoogleCallback() {
       try {
-        const response = await this.$api.get('/api/auth/google/callback');
-        console.log('Google callback response:', response.data);
+        const response = await api.get('/api/auth/google/callback', {
+          headers: {
+            'Authorization': `Session ${localStorage.getItem('sessionId') || ''}`
+          }
+        });
         if (response.data.sessionId) {
           localStorage.setItem('sessionId', response.data.sessionId);
-          console.log('sessionId stored:', localStorage.getItem('sessionId')); // ตรวจสอบว่าเก็บสำเร็จ
+          console.log('เก็บ sessionId:', localStorage.getItem('sessionId'));
           this.$router.push('/dashboard/home');
         } else {
-          console.error('No sessionId in Google callback response');
+          console.error('ไม่มี sessionId ใน Google callback response');
+          this.errorMessage = 'การเข้าสู่ระบบด้วย Google ล้มเหลว';
         }
       } catch (error) {
-        console.error('Google login error:', error.response ? error.response.data : error.message);
+        console.error('ข้อผิดพลาดการเข้าสู่ระบบด้วย Google:', error.response ? error.response.data : error.message);
+        this.errorMessage = 'การเข้าสู่ระบบด้วย Google ล้มเหลว กรุณาลองใหม่';
       }
     },
     goToRegister() {
@@ -86,21 +94,20 @@ export default {
     },
     async handleLogin() {
       try {
-        console.log('Calling login with this.$api:', this.$api);
-        const response = await this.$api.post('/api/auth/login', {
+        const response = await api.post('/api/auth/login', {
           email: this.email,
           password: this.password,
         });
-        console.log('Login response:', response.data);
         if (response.data.sessionId) {
           localStorage.setItem('sessionId', response.data.sessionId);
-          console.log('sessionId stored:', localStorage.getItem('sessionId')); // ตรวจสอบว่าเก็บสำเร็จ
+          console.log('เก็บ sessionId:', localStorage.getItem('sessionId'));
           this.$router.push('/dashboard/home');
         } else {
-          console.error('No sessionId in login response');
+          this.errorMessage = 'การเข้าสู่ระบบล้มเหลว ไม่ได้รับ session ID';
         }
       } catch (error) {
-        console.error('Login error:', error.response ? error.response.data : error.message);
+        console.error('ข้อผิดพลาดการเข้าสู่ระบบ:', error.response ? error.response.data : error.message);
+        this.errorMessage = error.response?.data?.message || 'การเข้าสู่ระบบล้มเหลว กรุณาตรวจสอบข้อมูล';
       }
     },
   },
