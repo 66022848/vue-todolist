@@ -14,10 +14,20 @@ passport.use(new GoogleStrategy({
       throw new Error('Incomplete Google profile data');
     }
 
-    const existingUser = await User.findOne({ googleId: profile.id });
+    let user = await User.findOne({ googleId: profile.id });
 
-    if (existingUser) {
-      return done(null, existingUser);
+    if (user) {
+      return done(null, user);
+    }
+
+    user = await User.findOne({ email: profile.emails[0].value });
+
+    if (user) {
+      user.googleId = profile.id;
+      user.username = profile.displayName || user.username;
+      user.picture = profile.photos && profile.photos.length ? profile.photos[0].value : user.picture;
+      await user.save();
+      return done(null, user);
     }
 
     const newUser = new User({
