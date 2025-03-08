@@ -11,17 +11,13 @@ const app = express();
 // การเชื่อมต่อ MongoDB พร้อมการ Retry
 async function connectDB() {
   try {
-    await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(process.env.MONGODB_URI);
     console.log('เชื่อมต่อกับ MongoDB สำเร็จ');
   } catch (err) {
     console.error('ข้อผิดพลาดการเชื่อมต่อ MongoDB:', err);
-    setTimeout(connectDB, 5000); // ลองใหม่ทุก 5 วินาที
+    setTimeout(connectDB, 5000);
   }
 }
-connectDB();
 
 // การตั้งค่า CORS
 const corsOptions = {

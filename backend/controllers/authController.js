@@ -44,53 +44,32 @@ exports.googleCallback = [
 ];
 
 exports.login = async (req, res) => {
-  const { email, password } = req.body;
-
-  console.log('Login attempt:', { email, password });
-
-  if (!email || !password) {
-    return res.status(400).json({ message: 'Email and password are required' });
-  }
-
   try {
+    console.log('Login attempt:', { email: req.body.email, password: req.body.password });
+    const { email, password } = req.body;
     const user = await User.findOne({ email });
-    if (!user) {
-      console.log('User not found:', email);
-      return res.status(400).json({ message: 'User not found' });
+
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return res.status(401).json({ message: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      console.log('Invalid credentials for:', email);
-      return res.status(400).json({ message: 'Invalid credentials' });
-    }
+    req.session.userId = user._id;
+    console.log('Session saved successfully, sessionID:', req.session.id);
 
-    req.session.user = {
-      id: user._id,
-      email: user.email,
-      username: user.username,
-      picture: user.picture,
-    };
-
-    await req.session.save((err) => {
-      if (err) {
-        console.error('Session save error:', err);
-        return res.status(500).json({ message: 'Session save failed', error: err.message });
-      }
-      console.log('Session saved successfully, sessionID:', req.sessionID);
-      store.set(req.sessionID, req.session, (err) => {
-        if (err) console.error('Error setting session in store:', err);
-        else console.log('Session stored in Redis/MemoryStore:', req.sessionID);
+    // บันทึก session ลง Redis (ถ้าใช้)
+    if (req.sessionStore && typeof req.sessionStore.set === 'function') {
+      await new Promise((resolve, reject) => {
+        req.sessionStore.set(req.session.id, req.session, (err) => {
+          if (err) reject(err);
+          else resolve();
+        });
       });
-    });
+    }
 
-    res.json({
-      user: req.session.user,
-      sessionId: req.sessionID,
-    });
+    res.json({ sessionId: req.session.id, user: { id: user._id, email: user.email } });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ', error: error.message });
   }
 };
 

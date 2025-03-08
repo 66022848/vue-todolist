@@ -13,30 +13,21 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 exports.getUser = async (req, res) => {
-  if (!req.session.user || !req.session.user.id) {
-    console.log('No session user found');
-    return res.json({ user: null });
-  }
-
   try {
-    const user = await User.findById(req.session.user.id).select('-password');
-    if (!user) {
-      console.log('User not found in DB');
-      return res.json({ user: null });
+    if (!req.session.userId) {
+      return res.status(401).json({ message: 'ไม่มีการล็อกอิน' });
     }
 
-    res.json({
-      user: {
-        id: user._id,
-        email: user.email,
-        username: user.username,
-        picture: user.picture,
-        points: user.points
-      },
-    });
+    const user = await User.findById(req.session.userId).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'ไม่พบผู้ใช้' });
+    }
+
+    // ไม่ต้องใช้ req.session.touch ถ้าไม่จำเป็น
+    res.json({ user });
   } catch (error) {
     console.error('Error fetching user from DB:', error);
-    res.json({ user: null });
+    res.status(500).json({ message: 'เกิดข้อผิดพลาดในการดึงข้อมูลผู้ใช้', error: error.message });
   }
 };
 
@@ -44,7 +35,7 @@ exports.updateUser = [
   upload.single('picture'),
   async (req, res) => {
     try {
-      if (!req.session.user || !req.session.user.id) {
+      if (!req.session || !req.session.user || !req.session.user.id) {
         return res.status(401).json({ message: 'Unauthorized: Please log in first' });
       }
 
