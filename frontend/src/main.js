@@ -10,9 +10,10 @@ import api from './src/api';
 
 library.add(faCalendarAlt, faCalendar, faClock);
 
+const app = createApp(App);
+
 app.config.globalProperties.$api = api;
 
-const app = createApp(App);
 app.component('font-awesome-icon', FontAwesomeIcon);
 app.use(router);
 app.mount('#app');
