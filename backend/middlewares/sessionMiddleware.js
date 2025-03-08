@@ -1,12 +1,14 @@
 const session = require('express-session');
 const { RedisStore } = require('connect-redis');
 const Redis = require('ioredis');
-require('dotenv').config();
 
 let store;
 if (process.env.NODE_ENV === 'production' && process.env.REDIS_URL) {
   const redisClient = new Redis(process.env.REDIS_URL);
 
+  redisClient.on('connect', () => {
+    console.log('Connected to Redis');
+  });
   redisClient.on('error', (err) => {
     console.error('Redis Client Error:', err);
   });
@@ -26,9 +28,10 @@ module.exports = session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: process.env.NODE_ENV === 'production', // ใช้ secure ใน production
+    secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
     maxAge: 1000 * 60 * 60 * 24, // 1 วัน
-    sameSite: 'lax', // ใช้ lax เพื่อให้ cookie ส่งใน cross-site requests ได้
+    sameSite: 'lax',
+    domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined, // ปรับให้ครอบคลุม subdomain
   },
 });

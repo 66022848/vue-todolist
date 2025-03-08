@@ -1,26 +1,35 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
-const passport = require('passport');
+const passport = require('../config/passport'); // นำเข้า passport จาก config
 
 exports.googleLogin = passport.authenticate('google', {
   scope: ['profile', 'email'],
 });
 
-exports.googleCallback = passport.authenticate('google', {
-  failureRedirect: 'https://66022848.github.io/vue-todolist/login',
-}), async (req, res) => {
-  // หลังจาก Google auth สำเร็จ
-  req.session.user = {
-    id: req.user._id,
-    email: req.user.email,
-    username: req.user.username,
-    picture: req.user.picture,
-  };
+exports.googleCallback = [
+  passport.authenticate('google', {
+    failureRedirect: 'https://66022848.github.io/vue-todolist/login',
+  }),
+  async (req, res) => {
+    try {
+      // หลังจาก Google auth สำเร็จ
+      req.session.user = {
+        id: req.user._id,
+        email: req.user.email,
+        username: req.user.username,
+        picture: req.user.picture,
+      };
 
-  console.log('Session data after Google Login:', req.session.user);
-  res.redirect('https://66022848.github.io/vue-todolist/dashboard/home');
-};
+      console.log('Session data after Google Login:', req.session.user);
+      res.redirect('https://66022848.github.io/vue-todolist/dashboard/home');
+    } catch (error) {
+      console.error('Google Callback Error:', error);
+      res.redirect('https://66022848.github.io/vue-todolist/login?error=auth_failed');
+    }
+  }
+];
 
+// คงส่วนอื่น ๆ ไว้ (login, register, logout) เพราะไม่มีปัญหา
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
