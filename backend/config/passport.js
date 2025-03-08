@@ -1,13 +1,13 @@
 const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 
 passport.use(new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: process.env.GOOGLE_REDIRECT_URL,
+  callbackURL: process.env.GOOGLE_REDIRECT_URL, // ตรงกับ .env
 }, async (accessToken, refreshToken, profile, done) => {
   try {
     const existingUser = await User.findOne({ googleId: profile.id });
@@ -20,6 +20,7 @@ passport.use(new GoogleStrategy({
       googleId: profile.id,
       username: profile.displayName,
       email: profile.emails[0].value,
+      picture: profile.photos[0].value, // เพิ่มรูปโปรไฟล์
     });
 
     await newUser.save();

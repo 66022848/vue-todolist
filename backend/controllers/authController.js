@@ -1,63 +1,24 @@
-const axios = require('axios');
-const User = require('../models/User'); 
+const User = require('../models/User');
 const bcrypt = require('bcryptjs');
+const passport = require('passport');
 
-exports.googleLogin = (req, res) => {
-  const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${process.env.GOOGLE_CLIENT_ID}&redirect_uri=${process.env.GOOGLE_REDIRECT_URL}&response_type=code&scope=profile email`;
-  res.redirect(url);
-};
+exports.googleLogin = passport.authenticate('google', {
+  scope: ['profile', 'email'],
+});
 
-exports.googleCallback = async (req, res) => {
-  const { code } = req.query;
+exports.googleCallback = passport.authenticate('google', {
+  failureRedirect: 'https://66022848.github.io/vue-todolist/login',
+}), async (req, res) => {
+  // หลังจาก Google auth สำเร็จ
+  req.session.user = {
+    id: req.user._id,
+    email: req.user.email,
+    username: req.user.username,
+    picture: req.user.picture,
+  };
 
-  if (!code) {
-    return res.status(400).json({ error: 'Code not received' });
-  }
-
-  try {
-    const { data } = await axios.post('https://oauth2.googleapis.com/token', {
-      client_id: process.env.GOOGLE_CLIENT_ID,
-      client_secret: process.env.GOOGLE_CLIENT_SECRET,
-      code,
-      redirect_uri: process.env.GOOGLE_REDIRECT_URL,
-      grant_type: 'authorization_code',
-    });
-
-    const { access_token } = data;
-
-    const { data: profile } = await axios.get('https://www.googleapis.com/oauth2/v1/userinfo', {
-      headers: { Authorization: `Bearer ${access_token}` },
-    });
-
-    let user = await User.findOne({ email: profile.email });
-    if (!user) {
-      user = new User({
-        email: profile.email,
-        username: profile.name || 'Google User',
-        password: '',
-        picture: profile.picture,
-      });
-      await user.save();
-    } else {
-
-      user.picture = profile.picture;
-      await user.save();
-    }
-
-    req.session.user = {
-      id: user._id,
-      email: user.email,
-      username: user.username,
-      picture: user.picture,
-    };
-
-    console.log('Session data after Google Login:', req.session.user);
-
-    res.redirect('https://66022848.github.io/vue-todolist/dashboard/home');
-  } catch (error) {
-    console.error('Error during Google authentication:', error);
-    res.status(500).json({ error: 'Authentication failed' });
-  }
+  console.log('Session data after Google Login:', req.session.user);
+  res.redirect('https://66022848.github.io/vue-todolist/dashboard/home');
 };
 
 exports.login = async (req, res) => {
@@ -78,10 +39,10 @@ exports.login = async (req, res) => {
       id: user._id,
       email: user.email,
       username: user.username,
+      picture: user.picture,
     };
 
     console.log('Session data after Email Login:', req.session.user);
-
     res.json({ user: req.session.user });
   } catch (error) {
     console.error('Login error:', error);
