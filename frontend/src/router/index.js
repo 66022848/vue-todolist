@@ -39,8 +39,21 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory('/vue-todolist/'),
   routes,
+});
+
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = !!localStorage.getItem('sessionId');
+  console.log('Route Guard:', { to: to.path, isAuthenticated });
+
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    next('/login');
+  } else if (to.path === '/login' && isAuthenticated) {
+    next('/dashboard/home'); // ถ้าล็อกอินแล้ว ไม่ต้องกลับไปหน้า login
+  } else {
+    next();
+  }
 });
 
 export default router;
