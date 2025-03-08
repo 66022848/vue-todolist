@@ -1,5 +1,5 @@
 const session = require('express-session');
-const RedisStore = require('connect-redis').default;
+const RedisStore = require('connect-redis')(session); // วิธีเก่าสำหรับ connect-redis รุ่นเก่า
 const Redis = require('ioredis');
 
 let redisClient;
@@ -40,4 +40,4 @@ const sessionMiddleware = session({
   },
 });
 
-module.exports = { sessionMiddleware, store }; // ตรวจสอบให้แน่ใจว่า export store
+module.exports = { sessionMiddleware, store };
