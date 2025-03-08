@@ -53,7 +53,7 @@ exports.googleCallback = async (req, res) => {
 
     console.log('Session data after Google Login:', req.session.user);
 
-    res.redirect('http://localhost:5173/vue-todolist/dashboard/home');
+    res.redirect('https://66022848.github.io/vue-todolist/dashboard/home');
   } catch (error) {
     console.error('Error during Google authentication:', error);
     res.status(500).json({ error: 'Authentication failed' });

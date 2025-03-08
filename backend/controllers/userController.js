@@ -61,7 +61,7 @@ exports.updateUser = [
       }
 
       if (req.file) {
-        user.picture = `http://localhost:3001/uploads/${req.file.filename}`;
+        user.picture = `https://vue-todolist-backend.onrender.com/uploads/${req.file.filename}`;
       }
 
       await user.save();
