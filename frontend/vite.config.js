@@ -4,10 +4,14 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [vue()],
-  base: '/vue-todolist/', // สำหรับ GitHub Pages
+  base: '/vue-todolist/',
   server: {
     proxy: {
-      '/api': 'http://localhost:3001', // ใช้ตอนพัฒนา
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
     },
   },
   resolve: {
@@ -28,8 +32,5 @@ export default defineConfig({
         entryFileNames: 'assets/[name].[hash].js',
       },
     },
-  },
-  define: {
-    'process.env': {}, // เพื่อให้โค้ดที่ใช้ process.env ทำงานได้
   },
 });

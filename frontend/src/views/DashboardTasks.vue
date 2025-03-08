@@ -20,6 +20,8 @@
   <script>
   import axios from "axios";
   
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
   export default {
     name: "DashboardTasks",
     data() {
@@ -31,7 +33,7 @@
     methods: {
       async fetchTasks() {
         try {
-          const res = await axios.get("https://vue-todolist-backend.onrender.com/api/tasks");
+          const res = await axios.get("${API_BASE_URL}/api/tasks");
           this.tasks = res.data;
         } catch (err) {
           console.error("Error fetching tasks:", err);
@@ -44,7 +46,7 @@
             status: 'upcoming',
           };
           try {
-            const res = await axios.post("https://vue-todolist-backend.onrender.com/api/tasks", newTask);
+            const res = await axios.post("${API_BASE_URL}/api/tasks", newTask);
             console.log('Task added:', res.data);
             this.tasks.push(res.data);
             this.newTask = "";
@@ -56,14 +58,14 @@
       async toggleTask(task) {
         try {
           task.done = !task.done;
-          await axios.put(`https://vue-todolist-backend.onrender.com/api/tasks/${task._id}`, task);
+          await axios.put(`${API_BASE_URL}/api/tasks/${task._id}`, task);
         } catch (err) {
           console.error("Error toggling task:", err);
         }
       },
       async removeTask(id) {
         try {
-          await axios.delete(`https://vue-todolist-backend.onrender.com/api/tasks/${id}`);
+          await axios.delete(`${API_BASE_URL}/api/tasks/${id}`);
           this.tasks = this.tasks.filter(task => task._id !== id);
         } catch (err) {
           console.error("Error removing task:", err);

@@ -54,6 +54,8 @@
 <script>
 import axios from 'axios';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export default {
   name: 'DashboardSettings',
   data() {
@@ -77,7 +79,7 @@ export default {
     async fetchUserData() {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('https://vue-todolist-backend.onrender.com/api/user', {
+        const response = await axios.get('${API_BASE_URL}/api/user', {
           withCredentials: true,
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });

@@ -68,6 +68,8 @@ import VueDatePicker from "@vuepic/vue-datepicker";
 import "@vuepic/vue-datepicker/dist/main.css";
 import { emitter } from '@/eventBus';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export default {
   components: { VueDatePicker },
   data() {
@@ -103,7 +105,7 @@ export default {
         }
       };
 
-      fetch('https://vue-todolist-backend.onrender.com/api/quest', {
+      fetch('${API_BASE_URL}/api/quest', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(eventData),

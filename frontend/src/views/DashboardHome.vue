@@ -89,6 +89,8 @@
 import axios from 'axios';
 import { emitter } from '@/eventBus';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export default {
   name: "DashboardHome",
   data() {
@@ -104,7 +106,7 @@ export default {
   methods: {
     async fetchTaskCounts() {
       try {
-        const response = await axios.get('https://vue-todolist-backend.onrender.com/api/tasks/counts', { withCredentials: true });
+        const response = await axios.get('${API_BASE_URL}/api/tasks/counts', { withCredentials: true });
         this.upcomingCount = response.data.upcomingCount || 0;
         this.inProgressCount = response.data.inProgressCount || 0;
         this.completedCount = response.data.completedCount || 0;
@@ -118,7 +120,7 @@ export default {
     },
     async fetchUserPoints() {
       try {
-        const response = await axios.get('https://vue-todolist-backend.onrender.com/api/user', { withCredentials: true });
+        const response = await axios.get('${API_BASE_URL}/api/user', { withCredentials: true });
         if (response.data.user) {
           this.userPoints = response.data.user.points || 0;
         } else {
@@ -135,7 +137,7 @@ export default {
     },
     async fetchQuests() {
       try {
-        const response = await axios.get('https://vue-todolist-backend.onrender.com/api/quest/user', { withCredentials: true });
+        const response = await axios.get('${API_BASE_URL}/api/quest/user', { withCredentials: true });
         const quests = (response.data.todayQuests || []).concat(response.data.past7DaysQuests || []);
         const now = new Date();
         const sevenDaysAgo = new Date(now.setDate(now.getDate() - 7));
