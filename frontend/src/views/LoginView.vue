@@ -95,7 +95,7 @@ export default {
           console.log('sessionId stored:', localStorage.getItem('sessionId')); // ตรวจสอบว่าเก็บสำเร็จ
           this.$router.push('/dashboard/home');
         } else {
-          console.error('No sessionId in response');
+          console.error('No sessionId in login response');
         }
       } catch (error) {
         console.error('Login error:', error.response ? error.response.data : error.message);
