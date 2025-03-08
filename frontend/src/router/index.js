@@ -34,7 +34,13 @@ const routes = [
       { path: 'memo', component: Memo, name: 'memo' },
       { path: 'done', component: Done, name: 'done' },
     ]
+<<<<<<< HEAD
   },
+=======
+  },{
+    base: '/vue-todolist'
+  }
+>>>>>>> gh-pages
 ];
 
 const router = createRouter({
