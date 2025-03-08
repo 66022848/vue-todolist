@@ -24,6 +24,15 @@ exports.googleCallback = [
       };
 
       await req.session.save();
+
+      res.cookie('connect.sid', req.sessionID, {
+        sameSite: 'none',
+        secure: true,
+        httpOnly: true,
+        maxAge: 1000 * 60 * 60 * 24,
+        domain: '.onrender.com',
+      });
+
       console.log('Session data after Google Login:', req.session.user);
       res.redirect('https://66022848.github.io/vue-todolist/dashboard/home');
     } catch (error) {
@@ -53,6 +62,16 @@ exports.login = async (req, res) => {
       username: user.username,
       picture: user.picture,
     };
+
+    await req.session.save();
+
+    res.cookie('connect.sid', req.sessionID, {
+      sameSite: 'none',
+      secure: true,
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24,
+      domain: '.onrender.com',
+    });
 
     console.log('Session data after Email Login:', req.session.user);
     res.json({ user: req.session.user });
@@ -89,6 +108,16 @@ exports.register = async (req, res) => {
       username: newUser.username,
     };
 
+    await req.session.save();
+
+    res.cookie('connect.sid', req.sessionID, {
+      sameSite: 'none',
+      secure: true,
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24,
+      domain: '.onrender.com',
+    });
+
     res.status(201).json({ message: 'User registered successfully', user: req.session.user });
   } catch (error) {
     console.error('Registration error:', error);
@@ -102,6 +131,7 @@ exports.logout = (req, res) => {
       console.error('Logout error:', err);
       return res.status(500).json({ message: 'Logout failed' });
     }
+    res.clearCookie('connect.sid');
     res.json({ message: 'Logout successful' });
   });
 };
