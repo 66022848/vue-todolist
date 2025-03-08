@@ -13,7 +13,12 @@ function authenticateWithSessionId(req, res, next) {
   const sessionId = authHeader.split(' ')[1];
 
   store.get(sessionId, (err, session) => {
-    if (err || !session || !session.user) {
+    if (err) {
+      console.error('Redis error:', err);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+    if (!session || !session.user) {
+      console.log('Invalid or expired session:', sessionId);
       return res.status(401).json({ message: 'Invalid session' });
     }
     req.session = session;

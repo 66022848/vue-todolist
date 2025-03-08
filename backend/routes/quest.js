@@ -3,8 +3,39 @@ const router = express.Router();
 const Quest = require('../models/Quest');
 const User = require('../models/User');
 const { getUserQuests } = require('../controllers/questController');
+const { store } = require('../middlewares/sessionMiddleware');
 
-router.post('/', async (req, res) => {
+function authenticateWithSessionId(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  console.log('Received Authorization header:', authHeader);
+
+  if (!authHeader || !authHeader.startsWith('Session ')) {
+    console.log('Unauthorized: No session ID or invalid format');
+    return res.status(401).json({ message: 'Unauthorized: No session ID' });
+  }
+
+  const sessionId = authHeader.split(' ')[1];
+  console.log('Extracted sessionId:', sessionId);
+
+  store.get(sessionId, (err, session) => {
+    if (err) {
+      console.error('Redis/Store error:', err);
+      return res.status(500).json({ message: 'Internal server error', error: err.message });
+    }
+
+    if (!session || !session.user) {
+      console.log('Invalid or expired session for sessionId:', sessionId);
+      return res.status(401).json({ message: 'Invalid session' });
+    }
+
+    console.log('Session found:', session);
+    req.session = session;
+    req.sessionID = sessionId;
+    next();
+  });
+}
+
+router.post('/', authenticateWithSessionId, async (req, res) => {
   try {
     if (!req.session.user || !req.session.user.id) {
       return res.status(401).json({ message: 'Unauthorized: Please log in first' });
@@ -35,6 +66,9 @@ router.post('/', async (req, res) => {
       user.points = (user.points || 0) + 10;
       await user.save();
       req.session.user.points = user.points;
+      store.set(req.sessionID, req.session, (err) => {
+        if (err) console.error('Error updating session:', err);
+      });
     }
 
     res.status(201).json({
@@ -48,7 +82,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.get('/user', getUserQuests);
+router.get('/user', authenticateWithSessionId, getUserQuests);
 
 router.get('/', (req, res) => {
   Quest.find()

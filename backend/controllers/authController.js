@@ -75,15 +75,18 @@ exports.login = async (req, res) => {
     await req.session.save((err) => {
       if (err) {
         console.error('Session save error:', err);
-        throw err;
+        return res.status(500).json({ message: 'Session save failed', error: err.message });
       }
       console.log('Session saved successfully, sessionID:', req.sessionID);
+      store.set(req.sessionID, req.session, (err) => {
+        if (err) console.error('Error setting session in store:', err);
+        else console.log('Session stored in Redis/MemoryStore:', req.sessionID);
+      });
     });
 
-    console.log('Sending response with sessionId:', req.sessionID);
     res.json({
       user: req.session.user,
-      sessionId: req.sessionID
+      sessionId: req.sessionID,
     });
   } catch (error) {
     console.error('Login error:', error);
