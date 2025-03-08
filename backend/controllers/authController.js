@@ -9,7 +9,7 @@ exports.googleLogin = passport.authenticate('google', {
 exports.googleCallback = [
   passport.authenticate('google', {
     failureRedirect: 'https://66022848.github.io/vue-todolist/login',
-    session: false, // ปิดการใช้ session ของ passport
+    session: false,
   }),
   async (req, res) => {
     try {
@@ -45,6 +45,8 @@ exports.googleCallback = [
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;
+
+  console.log('Login attempt:', { email, password });
 
   if (!email || !password) {
     return res.status(400).json({ message: 'Email and password are required' });

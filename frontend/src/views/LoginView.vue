@@ -76,20 +76,21 @@ export default {
     },
     async handleLogin() {
       try {
-        const response = await api.post(
-          '/api/auth/login',
-          {
-            email: this.email,
-            password: this.password,
-          }
-        );
-
-        console.log('Login successful:', response.data);
-        this.errorMessage = '';
-        this.$router.push('/dashboard/home');
+        const response = await this.$api.post('/api/auth/login', {
+          email: this.email,
+          password: this.password,
+        }, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        console.log('Login response:', response.data);
+        if (response.data.sessionId) {
+          localStorage.setItem('sessionId', response.data.sessionId);
+          this.$router.push('/dashboard/home');
+        }
       } catch (error) {
-        this.errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
-        console.error('Login error:', error);
+        console.error('Login error:', error.response ? error.response.data : error.message);
       }
     },
   },

@@ -6,6 +6,7 @@ const router = express.Router();
 
 function authenticateWithSessionId(req, res, next) {
   const authHeader = req.headers['authorization'];
+  console.log('Authorization header:', authHeader);
   if (!authHeader || !authHeader.startsWith('Session ')) {
     return res.status(401).json({ message: 'Unauthorized: No session ID' });
   }
