@@ -1,14 +1,13 @@
 const express = require('express');
 const cors = require('cors');
 const sessionMiddleware = require('./middlewares/sessionMiddleware');
-const passport = require('./config/passport'); // นำเข้า passport ที่กำหนดค่าแล้ว
+const passport = require('./config/passport');
 const mongoose = require('mongoose');
 const path = require('path');
-require('dotenv').config(); // โหลด .env
+require('dotenv').config();
 
 const app = express();
 
-// เชื่อมต่อ MongoDB
 mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -16,7 +15,6 @@ mongoose.connect(process.env.MONGODB_URI, {
 .then(() => console.log('Connected to MongoDB'))
 .catch((err) => console.error('MongoDB connection error:', err));
 
-// ตั้งค่า CORS
 app.use(cors({
   origin: [
     'http://localhost:5173',
@@ -28,7 +26,6 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Middleware
 app.use(express.json());
 app.use(sessionMiddleware);
 app.use(passport.initialize());
@@ -36,12 +33,10 @@ app.use(passport.session());
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// เส้นทางทดสอบ
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to vue-todolist-backend API! Use /api/... for endpoints.' });
 });
 
-// Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/user', require('./routes/user'));
 app.use('/api/quest', require('./routes/quest'));
