@@ -5,4 +5,15 @@ const api = axios.create({
   withCredentials: true,
 });
 
+api.interceptors.request.use(config => {
+  const sessionId = localStorage.getItem('sessionId');
+  if (sessionId) {
+    config.headers.Authorization = `Session ${sessionId}`;
+  }
+  console.log('Request Headers:', config.headers);
+  return config;
+}, error => {
+  return Promise.reject(error);
+});
+
 export default api;

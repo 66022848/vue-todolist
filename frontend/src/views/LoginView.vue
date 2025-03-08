@@ -65,6 +65,12 @@ export default {
     googleLogin() {
       window.location.href = `${this.API_BASE_URL}/api/auth/google`;
     },
+    async handleGoogleCallback(response) {
+      if (response.data.sessionId) {
+        localStorage.setItem('sessionId', response.data.sessionId);
+        this.$router.push('/dashboard/home');
+      }
+    },
     goToRegister() {
       this.$router.push('/register');
     },

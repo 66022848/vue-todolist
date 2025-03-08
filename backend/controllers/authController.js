@@ -9,6 +9,7 @@ exports.googleLogin = passport.authenticate('google', {
 exports.googleCallback = [
   passport.authenticate('google', {
     failureRedirect: 'https://66022848.github.io/vue-todolist/login',
+    session: false,
   }),
   async (req, res) => {
     try {
@@ -31,18 +32,13 @@ exports.googleCallback = [
         console.log('Session saved successfully, sessionID:', req.sessionID);
       });
 
-      res.cookie('connect.sid', req.sessionID, {
-        sameSite: 'none',
-        secure: true,
-        httpOnly: true,
-        maxAge: 1000 * 60 * 60 * 24,
+      res.json({
+        user: req.session.user,
+        sessionId: req.sessionID,
       });
-
-      console.log('Session data after Google Login:', req.session.user);
-      res.redirect('https://66022848.github.io/vue-todolist/dashboard/home');
     } catch (error) {
       console.error('Google Callback Error:', error.message, error.stack);
-      res.redirect('https://66022848.github.io/vue-todolist/login?error=auth_failed');
+      res.status(500).json({ message: 'Authentication failed' });
     }
   }
 ];
@@ -81,10 +77,9 @@ exports.login = async (req, res) => {
       secure: true,
       httpOnly: true,
       maxAge: 1000 * 60 * 60 * 24,
-      domain: '.onrender.com',
     });
 
-    console.log('Session data after Email Login:', req.session.user);
+    console.log('Set-Cookie header sent:', res.get('Set-Cookie'));
     res.json({ user: req.session.user });
   } catch (error) {
     console.error('Login error:', error);
