@@ -3,8 +3,8 @@ import vue from '@vitejs/plugin-vue';
 import path from 'path';
 
 export default defineConfig({
-  base: '/vue-todolist/',
   plugins: [vue()],
+  base: '/vue-todolist/',
   server: {
     proxy: {
       '/auth': 'http://localhost:3001',
@@ -20,12 +20,12 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    assetsDir: 'assets',
+    assetsDir: 'a',
     rollupOptions: {
       output: {
-        chunkFileNames: 'assets/[name].[hash].js',
-        entryFileNames: 'assets/[name].[hash].js',
-        assetFileNames: 'assets/[name].[hash].[ext]'
+        assetFileNames: 'assets/[name].[hash:6].[ext]',
+        chunkFileNames: 'assets/[name].[hash:6].js',
+        entryFileNames: 'assets/[name].[hash:6].js',
       }
     }
   }

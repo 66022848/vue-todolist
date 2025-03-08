@@ -34,7 +34,9 @@ const routes = [
       { path: 'memo', component: Memo, name: 'memo' },
       { path: 'done', component: Done, name: 'done' },
     ]
-  },
+  },{
+    base: '/vue-todolist'
+  }
 ];
 
 const router = createRouter({
