@@ -34,7 +34,7 @@ exports.googleCallback = [
 
       res.json({
         user: req.session.user,
-        sessionId: req.sessionID,
+        sessionId: req.sessionID
       });
     } catch (error) {
       console.error('Google Callback Error:', error.message, error.stack);
@@ -81,8 +81,9 @@ exports.login = async (req, res) => {
     });
 
     console.log('Sending response with sessionId:', req.sessionID);
+    res.json({
       user: req.session.user,
-      sessionId: req.sessionID,
+      sessionId: req.sessionID
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -128,7 +129,7 @@ exports.register = async (req, res) => {
     res.status(201).json({
       message: 'User registered successfully',
       user: req.session.user,
-      sessionId: req.sessionID,
+      sessionId: req.sessionID
     });
   } catch (error) {
     console.error('Registration error:', error);
