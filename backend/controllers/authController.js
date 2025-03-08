@@ -47,23 +47,19 @@ exports.login = async (req, res) => {
   try {
     console.log('Login attempt:', { email: req.body.email, password: req.body.password });
     const { email, password } = req.body;
-    const user = await User.findOne({ email }).lean(); // ใช้ lean() เพื่อลดการโหลดข้อมูล
+    const user = await User.findOne({ email }).lean();
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ message: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
     }
 
     req.session.userId = user._id;
-    console.log('Session saved successfully, sessionID:', req.session.id);
-
-    if (req.sessionStore && typeof req.sessionStore.set === 'function') {
-      await new Promise((resolve, reject) => {
-        req.sessionStore.set(req.session.id, req.session, (err) => {
-          if (err) reject(err);
-          else resolve();
-        });
+    await new Promise((resolve, reject) => {
+      req.session.save((err) => {
+        if (err) reject(err);
+        else resolve();
       });
-    }
+    });
 
     res.json({ sessionId: req.session.id, user: { id: user._id, email: user.email } });
   } catch (error) {

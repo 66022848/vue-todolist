@@ -18,12 +18,11 @@ exports.getUser = async (req, res) => {
       return res.status(401).json({ message: 'ไม่มีการล็อกอิน' });
     }
 
-    const user = await User.findById(req.session.userId).select('-password');
+    const user = await User.findById(req.session.userId).select('-password').lean();
     if (!user) {
       return res.status(404).json({ message: 'ไม่พบผู้ใช้' });
     }
 
-    // ไม่ต้องใช้ req.session.touch ถ้าไม่จำเป็น
     res.json({ user });
   } catch (error) {
     console.error('Error fetching user from DB:', error);

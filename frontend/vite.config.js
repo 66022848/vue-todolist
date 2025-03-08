@@ -4,7 +4,7 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [vue()],
-  base: process.env.NODE_ENV === 'production' ? '/vue-todolist/' : '/',
+  base: process.env.VITE_BASE_URL || '/', // ตั้งค่า base URL
   server: {
     proxy: {
       '/api': {
