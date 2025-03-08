@@ -29,6 +29,7 @@
 </template>
 
 <script>
+import api from '@/api';
 import VueDatePicker from "@vuepic/vue-datepicker";
 import "@vuepic/vue-datepicker/dist/main.css";
 import { emitter } from '@/eventBus';
@@ -42,7 +43,6 @@ export default {
       startTime: "06:45",
       dayCounter: 0,
       selectedColor: localStorage.getItem('selectedColor') || "#01579B",
-      API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'https://vue-todolist-backend.onrender.com', // Fallback URL
     };
   },
   created() {
@@ -51,7 +51,7 @@ export default {
     }
   },
   methods: {
-    saveMemo() {
+    async saveMemo() {
       const memoData = {
         title: this.title,
         startDate: this.startDate,
@@ -62,36 +62,22 @@ export default {
 
       console.log("Memo Data to be sent:", memoData);
 
-      fetch(`${this.API_BASE_URL}/api/quest`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      try {
+        const response = await api.post('/api/quest', {
           title: this.title,
           type: 'Memo',
           memoDetails: memoData,
-        }),
-        credentials: 'include',
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(response.statusText || 'Failed to save memo');
-        }
-        return response.json();
-      })
-      .then(data => {
-        console.log('Memo saved successfully:', data);
-        alert(`Memo บันทึกสำเร็จ! คุณได้รับ 10 คะแนน รวม: ${data.points} คะแนน`);
+        });
+        console.log('Memo saved successfully:', response.data);
+        alert(`Memo บันทึกสำเร็จ! คุณได้รับ 10 คะแนน รวม: ${response.data.points} คะแนน`);
         this.$router.push('/dashboard/done');
         this.$nextTick(() => {
           emitter.emit('refresh-dashboard');
         });
-      })
-      .catch(error => {
+      } catch (error) {
         console.error('Error saving memo:', error);
         alert('เกิดข้อผิดพลาดในการบันทึก memo: ' + error.message);
-      });
+      }
     }
   }
 };

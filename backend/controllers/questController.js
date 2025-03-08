@@ -2,8 +2,7 @@ const Quest = require('../models/Quest');
 
 exports.getUserQuests = async (req, res) => {
   try {
-    // ตรวจสอบ session
-    if (!req.session.user || !req.session.user.id) {
+    if (!req.session || !req.session.user || !req.session.user.id) {
       return res.status(401).json({ message: 'Unauthorized: Please log in first' });
     }
 

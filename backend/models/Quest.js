@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 
-// สร้าง Schema สำหรับ Quest
 const questSchema = new mongoose.Schema({
   title: {
     type: String,
@@ -48,7 +47,7 @@ const questSchema = new mongoose.Schema({
     startTime: { type: String, required: function () { return this.type === 'Memo'; } },
     startDate: { type: Date, required: function () { return this.type === 'Memo'; } },
   },
-  userId: { // เพิ่มฟิลด์นี้เพื่อผูกกับผู้ใช้
+  userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,

@@ -9,7 +9,7 @@ exports.googleLogin = passport.authenticate('google', {
 exports.googleCallback = [
   passport.authenticate('google', {
     failureRedirect: 'https://66022848.github.io/vue-todolist/login',
-    session: false,
+    session: false, // ปิดการใช้ session ของ passport
   }),
   async (req, res) => {
     try {
@@ -72,15 +72,10 @@ exports.login = async (req, res) => {
       console.log('Session saved successfully, sessionID:', req.sessionID);
     });
 
-    res.cookie('connect.sid', req.sessionID, {
-      sameSite: 'none',
-      secure: true,
-      httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 24,
+    res.json({
+      user: req.session.user,
+      sessionId: req.sessionID,
     });
-
-    console.log('Set-Cookie header sent:', res.get('Set-Cookie'));
-    res.json({ user: req.session.user });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Server error' });
@@ -114,17 +109,19 @@ exports.register = async (req, res) => {
       username: newUser.username,
     };
 
-    await req.session.save();
-
-    res.cookie('connect.sid', req.sessionID, {
-      sameSite: 'none',
-      secure: true,
-      httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 24,
-      domain: '.onrender.com',
+    await req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        throw err;
+      }
+      console.log('Session saved successfully, sessionID:', req.sessionID);
     });
 
-    res.status(201).json({ message: 'User registered successfully', user: req.session.user });
+    res.status(201).json({
+      message: 'User registered successfully',
+      user: req.session.user,
+      sessionId: req.sessionID,
+    });
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({ message: 'Registration failed' });
@@ -132,12 +129,17 @@ exports.register = async (req, res) => {
 };
 
 exports.logout = (req, res) => {
-  req.session.destroy((err) => {
+  const authHeader = req.headers['authorization'];
+  if (!authHeader || !authHeader.startsWith('Session ')) {
+    return res.status(401).json({ message: 'Unauthorized: No session ID' });
+  }
+  const sessionId = authHeader.split(' ')[1];
+
+  req.sessionStore.destroy(sessionId, (err) => {
     if (err) {
       console.error('Logout error:', err);
       return res.status(500).json({ message: 'Logout failed' });
     }
-    res.clearCookie('connect.sid');
     res.json({ message: 'Logout successful' });
   });
 };

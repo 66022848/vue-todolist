@@ -52,7 +52,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import api from '@/api';
 
 export default {
   name: 'DashboardSettings',
@@ -68,7 +68,6 @@ export default {
       isEditing: false,
       previewImage: null,
       uploadedFile: null,
-      API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'https://vue-todolist-backend.onrender.com', // Fallback URL
     };
   },
   created() {
@@ -77,11 +76,7 @@ export default {
   methods: {
     async fetchUserData() {
       try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get(`${this.API_BASE_URL}/api/user`, {
-          withCredentials: true,
-          headers: token ? { Authorization: `Bearer ${token}` } : {}
-        });
+        const response = await api.get('/api/user');
         console.log('API Response:', response.data);
         if (response.data.user) {
           this.user = response.data.user;
@@ -131,7 +126,6 @@ export default {
     },
     async updateProfile() {
       try {
-        const token = localStorage.getItem('token');
         const formData = new FormData();
         formData.append('username', this.editedUser.username);
 
@@ -139,10 +133,8 @@ export default {
           formData.append('picture', this.uploadedFile);
         }
 
-        const response = await axios.put(`${this.API_BASE_URL}/api/user/update`, formData, {
-          withCredentials: true,
+        const response = await api.put('/api/user/update', formData, {
           headers: {
-            Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data'
           }
         });

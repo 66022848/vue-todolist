@@ -2,7 +2,7 @@ const Quest = require('../models/Quest');
 
 exports.getTaskCounts = async (req, res) => {
   try {
-    if (!req.session.user || !req.session.user.id) {
+    if (!req.session || !req.session.user || !req.session.user.id) {
       return res.status(401).json({ message: 'Unauthorized: Please log in first' });
     }
 
@@ -21,7 +21,7 @@ exports.getTaskCounts = async (req, res) => {
       inProgressCount: 0,
       completedCount: 0,
       summary: {
-        labels: ['Event', 'Memo'], // ประเภทที่สนใจ
+        labels: ['Event', 'Memo'],
         data: [0, 0]
       }
     };

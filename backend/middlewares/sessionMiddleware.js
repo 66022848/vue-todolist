@@ -24,7 +24,7 @@ if (process.env.NODE_ENV === 'production' && process.env.REDIS_URL) {
   console.warn('Using MemoryStore - not suitable for production unless temporary');
 }
 
-module.exports = session({
+const sessionMiddleware = session({
   store: store,
   secret: process.env.SESSION_SECRET || 'your-default-secret',
   resave: false,
@@ -34,6 +34,8 @@ module.exports = session({
     httpOnly: true,
     maxAge: 1000 * 60 * 60 * 24,
     sameSite: 'none',
-    domain: undefined,
   },
 });
+
+// Export store เพื่อใช้ใน middleware อื่น ๆ
+module.exports = { sessionMiddleware, store };

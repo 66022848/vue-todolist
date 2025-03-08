@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const sessionMiddleware = require('./middlewares/sessionMiddleware');
+const { sessionMiddleware } = require('./middlewares/sessionMiddleware');
 const passport = require('./config/passport');
 const mongoose = require('mongoose');
 const path = require('path');
@@ -29,7 +29,6 @@ app.use(cors({
 app.use(express.json());
 app.use(sessionMiddleware);
 app.use(passport.initialize());
-app.use(passport.session());
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
