@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const taskController = require('../controllers/taskController');
+const getTaskCounts = require('../controllers/taskController');
 
 function authenticateSession(req, res, next) {
   const authHeader = req.headers['authorization'];
