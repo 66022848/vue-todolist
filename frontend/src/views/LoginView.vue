@@ -65,10 +65,19 @@ export default {
     googleLogin() {
       window.location.href = `${this.API_BASE_URL}/api/auth/google`;
     },
-    async handleGoogleCallback(response) {
-      if (response.data.sessionId) {
-        localStorage.setItem('sessionId', response.data.sessionId);
-        this.$router.push('/dashboard/home');
+    async handleGoogleCallback() {
+      try {
+        const response = await this.$api.get('/api/auth/google/callback');
+        console.log('Google callback response:', response.data);
+        if (response.data.sessionId) {
+          localStorage.setItem('sessionId', response.data.sessionId);
+          console.log('sessionId stored:', localStorage.getItem('sessionId')); // ตรวจสอบว่าเก็บสำเร็จ
+          this.$router.push('/dashboard/home');
+        } else {
+          console.error('No sessionId in Google callback response');
+        }
+      } catch (error) {
+        console.error('Google login error:', error.response ? error.response.data : error.message);
       }
     },
     goToRegister() {
@@ -79,15 +88,14 @@ export default {
         const response = await this.$api.post('/api/auth/login', {
           email: this.email,
           password: this.password,
-        }, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
         });
         console.log('Login response:', response.data);
         if (response.data.sessionId) {
           localStorage.setItem('sessionId', response.data.sessionId);
+          console.log('sessionId stored:', localStorage.getItem('sessionId')); // ตรวจสอบว่าเก็บสำเร็จ
           this.$router.push('/dashboard/home');
+        } else {
+          console.error('No sessionId in response');
         }
       } catch (error) {
         console.error('Login error:', error.response ? error.response.data : error.message);

@@ -54,10 +54,16 @@ exports.login = async (req, res) => {
 
   try {
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: 'User not found' });
+    if (!user) {
+      console.log('User not found:', email);
+      return res.status(400).json({ message: 'User not found' });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
+    if (!isMatch) {
+      console.log('Invalid credentials for:', email);
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
 
     req.session.user = {
       id: user._id,
@@ -74,7 +80,7 @@ exports.login = async (req, res) => {
       console.log('Session saved successfully, sessionID:', req.sessionID);
     });
 
-    res.json({
+    console.log('Sending response with sessionId:', req.sessionID);
       user: req.session.user,
       sessionId: req.sessionID,
     });

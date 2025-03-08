@@ -37,5 +37,4 @@ const sessionMiddleware = session({
   },
 });
 
-// Export store เพื่อใช้ใน middleware อื่น ๆ
 module.exports = { sessionMiddleware, store };
