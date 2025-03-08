@@ -58,7 +58,7 @@ export default {
           this.$router.push('/dashboard/home');
         }
       } catch (error) {
-        console.log('No active session found');
+        console.log('No active session found:', error.message);
       }
     },
     googleLogin() {
@@ -79,10 +79,10 @@ export default {
         );
 
         console.log('Login successful:', response.data);
-
+        this.errorMessage = '';
         this.$router.push('/dashboard/home');
       } catch (error) {
-        this.errorMessage = error.response?.data?.message || 'Login failed';
+        this.errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
         console.error('Login error:', error);
       }
     },
