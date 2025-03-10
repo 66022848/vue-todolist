@@ -2,11 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const path = require('path');
-const { sessionMiddleware } = require('./middlewares/sessionMiddleware');
+const { customSessionMiddleware } = require('./middlewares/sessionMiddleware');
 const passport = require('./config/passport');
 require('dotenv').config();
-
-const MongoStore = require('connect-mongo');
 
 const app = express();
 
@@ -36,14 +34,6 @@ app.use(cors({
 }));
 app.options('*', cors());
 
-// ตรวจสอบการใช้ sessionMiddleware
-const sessionMiddleware = session({
-  secret: 'your-secret-key',
-  resave: false,
-  saveUninitialized: true,
-  store: MongoStore.create({ mongoUrl: 'your-mongo-url' })
-});
-
 // Middleware
 app.use(express.json());
 app.use(sessionMiddleware);
@@ -56,9 +46,8 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.get('/', (req, res) => {
   res.json({ message: 'ยินดีต้อนรับสู่ vue-todolist-backend API!' });
 });
-app.use((req, res, next) => {
-  console.log('Request received');
-  next(); // เรียก next() เพื่อให้ไปที่ middleware ถัดไป
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK' });
 });
 
 app.use('/api/auth', require('./routes/auth'));

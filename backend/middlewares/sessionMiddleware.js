@@ -21,7 +21,7 @@ if (process.env.NODE_ENV === 'production' && process.env.REDIS_URL) {
   console.warn('Using MemoryStore for session - Not ideal for production');
 }
 
-const sessionMiddleware = session({
+const customSessionMiddleware = session({
   store,
   secret: process.env.SESSION_SECRET || 'your-default-secret',
   resave: false,
@@ -34,4 +34,4 @@ const sessionMiddleware = session({
   },
 });
 
-module.exports = { sessionMiddleware };
+module.exports = { customSessionMiddleware };
