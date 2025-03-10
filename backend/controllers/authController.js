@@ -13,7 +13,9 @@ exports.googleCallback = [
   }),
   async (req, res) => {
     try {
-      if (!req.user) throw new Error('No user data after authentication');
+      if (!req.user) {
+        return res.status(400).json({ message: 'No user data after authentication' });
+      }
 
       let user = await User.findOne({ email: req.user.email });
       if (!user) {
@@ -27,13 +29,16 @@ exports.googleCallback = [
 
       req.session.userId = user._id;
       await new Promise((resolve, reject) => {
-        req.session.save((err) => (err ? reject(err) : resolve()));
+        req.session.save((err) => {
+          if (err) reject(err);
+          else resolve();
+        });
       });
 
-      console.log('Session saved successfully:', req.session.id);
-      res.json({ success: true, message: 'Login successful' });
+      const redirectUrl = `https://66022848.github.io/vue-todolist/login?sessionId=${req.session.id}`;
+      res.redirect(redirectUrl);
     } catch (error) {
-      console.error('Google Callback Error:', error);
+      console.error('Google Callback Error:', error.message, error.stack);
       res.status(500).json({ message: 'Authentication failed' });
     }
   },
@@ -41,22 +46,29 @@ exports.googleCallback = [
 
 exports.login = async (req, res) => {
   try {
+    console.log('Login attempt:', { email: req.body.email, password: req.body.password });
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).lean();
 
-    if (!user || !bcrypt.compareSync(password, user.password)) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return res.status(401).json({ message: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
     }
 
     req.session.userId = user._id;
     await new Promise((resolve, reject) => {
-      req.session.save((err) => (err ? reject(err) : resolve()));
+      req.session.save((err) => {
+        if (err) reject(err);
+        else resolve();
+      });
     });
 
-    res.json({ success: true, message: 'Login successful' });
+    res.json({ sessionId: req.session.id, user: { id: user._id, email: user.email } });
   } catch (error) {
-    console.error('Login Error:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error('Login error:', error);
+    if (error.name === 'MongoNetworkError' || error.message.includes('timed out')) {
+      return res.status(503).json({ message: 'เซิร์ฟเวอร์ฐานข้อมูลชั่วคราวไม่พร้อมใช้งาน', error: error.message });
+    }
+    res.status(500).json({ message: 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ', error: error.message });
   }
 };
 
@@ -102,16 +114,17 @@ exports.register = async (req, res) => {
 };
 
 exports.logout = (req, res) => {
-  if (!req.sessionID) {
-    return res.status(400).json({ message: 'No active session' });
+  const authHeader = req.headers['authorization'];
+  if (!authHeader || !authHeader.startsWith('Session ')) {
+    return res.status(401).json({ message: 'Unauthorized: No session ID' });
   }
+  const sessionId = authHeader.split(' ')[1];
 
-  req.session.destroy((err) => {
+  req.sessionStore.destroy(sessionId, (err) => {
     if (err) {
       console.error('Logout error:', err);
       return res.status(500).json({ message: 'Logout failed' });
     }
-    res.clearCookie('connect.sid');
     res.json({ message: 'Logout successful' });
   });
 };

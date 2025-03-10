@@ -1,10 +1,25 @@
 const session = require('express-session');
-const MongoStore = require('connect-mongo');
+const RedisStore = require('connect-redis')(session);
+const Redis = require('ioredis');
 
-const store = MongoStore.create({
-  mongoUrl: process.env.MONGODB_URI,
-  collectionName: 'sessions',
-});
+let store;
+if (process.env.NODE_ENV === 'production' && process.env.REDIS_URL) {
+  const redisClient = new Redis(process.env.REDIS_URL);
+  redisClient.on('connect', () => console.log('Connected to Redis'));
+  redisClient.on('error', (err) => {
+    console.error('Redis Error:', err);
+    console.warn('Redis failed, falling back to MemoryStore');
+    store = new session.MemoryStore();
+  });
+  store = new RedisStore({
+    client: redisClient,
+    prefix: 'sess:',
+    ttl: 24 * 60 * 60,
+  });
+} else {
+  store = new session.MemoryStore();
+  console.warn('Using MemoryStore for session - Not ideal for production');
+}
 
 const sessionMiddleware = session({
   store,
@@ -12,11 +27,11 @@ const sessionMiddleware = session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: process.env.NODE_ENV === 'production', // ใช้ secure mode ใน production เท่านั้น
+    secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000,
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // ปรับ sameSite ให้เข้ากับ env
+    maxAge: 24 * 60 * 60 * 1000, // 1 day
+    sameSite: 'none',
   },
 });
 
-module.exports = sessionMiddleware;
+module.exports = { sessionMiddleware };

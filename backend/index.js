@@ -6,6 +6,8 @@ const { sessionMiddleware } = require('./middlewares/sessionMiddleware');
 const passport = require('./config/passport');
 require('dotenv').config();
 
+const MongoStore = require('connect-mongo');
+
 const app = express();
 
 // การเชื่อมต่อ MongoDB
@@ -33,6 +35,14 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.options('*', cors());
+
+// ตรวจสอบการใช้ sessionMiddleware
+const sessionMiddleware = session({
+  secret: 'your-secret-key',
+  resave: false,
+  saveUninitialized: true,
+  store: MongoStore.create({ mongoUrl: 'your-mongo-url' })
+});
 
 // Middleware
 app.use(express.json());
