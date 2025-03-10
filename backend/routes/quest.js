@@ -5,6 +5,7 @@ const User = require('../models/User');
 const { getUserQuests } = require('../controllers/questController');
 const { store } = require('../middlewares/sessionMiddleware');
 
+// ฟังก์ชัน authenticateWithSessionId เพื่อยืนยัน session ID
 function authenticateWithSessionId(req, res, next) {
   const authHeader = req.headers['authorization'];
   console.log('Received Authorization header:', authHeader);
@@ -35,6 +36,7 @@ function authenticateWithSessionId(req, res, next) {
   });
 }
 
+// Route สำหรับสร้าง Quest ใหม่
 router.post('/', authenticateWithSessionId, async (req, res) => {
   try {
     if (!req.session.user || !req.session.user.id) {
@@ -82,8 +84,10 @@ router.post('/', authenticateWithSessionId, async (req, res) => {
   }
 });
 
+// Route สำหรับดึง Quest ของผู้ใช้
 router.get('/user', authenticateWithSessionId, getUserQuests);
 
+// Route สำหรับดึงทั้งหมด
 router.get('/', (req, res) => {
   Quest.find()
     .then((quests) => res.json(quests))
