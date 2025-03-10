@@ -36,7 +36,7 @@ app.options('*', cors());
 
 // Middleware
 app.use(express.json());
-app.use(sessionMiddleware);
+app.use(customSessionMiddleware);
 app.use(passport.initialize());
 
 // Static files
