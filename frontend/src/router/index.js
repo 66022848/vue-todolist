@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHashHistory } from 'vue-router'; 
 import LoginView from '../views/LoginView.vue';
 import RegisterView from '../views/RegisterView.vue';
 import DashboardHome from '../views/DashboardHome.vue';
@@ -39,7 +39,7 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory('/vue-todolist/'),
+  history: createWebHashHistory('/vue-todolist/'),
   routes,
 });
 

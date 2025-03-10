@@ -48,27 +48,41 @@ export default {
     };
   },
   mounted() {
-    this.checkSession();
-    // จัดการ Google OAuth callback
     const urlParams = new URLSearchParams(window.location.search);
     const sessionId = urlParams.get('sessionId');
+
     if (sessionId) {
       localStorage.setItem('sessionId', sessionId);
-      console.log('เก็บ sessionId จาก Google callback:', sessionId);
+      console.log('✅ เก็บ sessionId จาก Google callback:', sessionId);
       this.$router.push('/dashboard/home');
-      // ลบ query string ออกจาก URL
       window.history.replaceState({}, document.title, window.location.pathname);
+    } else {
+      this.checkSession();
     }
   },
   methods: {
     async checkSession() {
+      if (this.$route.path === '/login') return; // ✅ ป้องกันการเช็กซ้ำ
+
+      const sessionId = localStorage.getItem('sessionId');
+      if (!sessionId) {
+        console.log('❌ ไม่มี sessionId ใน localStorage, redirect ไป login');
+        if (this.$route.path !== '/login') {
+          this.$router.push('/login');
+        }
+        return;
+      }
+
       try {
         const response = await api.get('/api/user');
         if (response.data.user) {
+          console.log('✅ Session ใช้งานได้:', response.data.user);
           this.$router.push('/dashboard/home');
         }
       } catch (error) {
-        console.log('ไม่พบ session ที่ใช้งาน:', error.message);
+        console.log('❌ Session หมดอายุ:', error.message);
+        localStorage.removeItem('sessionId'); // ✅ ล้าง session ถ้าใช้งานไม่ได้
+        this.$router.push('/login');
       }
     },
     googleLogin() {
@@ -84,11 +98,17 @@ export default {
           email: this.email,
           password: this.password,
         });
-        localStorage.setItem('sessionId', response.data.sessionId);
-        console.log('Login successful, sessionId:', response.data.sessionId);
-        this.$router.push('/dashboard/home');
+
+        const sessionId = response.data.sessionId;
+        if (sessionId) {
+          localStorage.setItem('sessionId', sessionId);
+          console.log('✅ Login successful, sessionId:', sessionId);
+          this.$router.push('/dashboard/home');
+        } else {
+          throw new Error('No sessionId received from server');
+        }
       } catch (error) {
-        console.error('ข้อผิดพลาดการเข้าสู่ระบบ:', error.response?.data || error.message);
+        console.error('❌ ข้อผิดพลาดการเข้าสู่ระบบ:', error.response?.data || error.message);
         this.errorMessage = error.response?.data?.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ';
       }
     },
