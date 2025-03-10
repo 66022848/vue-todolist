@@ -1,8 +1,6 @@
 const Quest = require('../models/Quest');
 
-module.exports = { getUserQuests };
-
-exports.getUserQuests = async (req, res) => {
+const getUserQuests = async (req, res) => {
   try {
     if (!req.session || !req.session.user || !req.session.user.id) {
       return res.status(401).json({ message: 'Unauthorized: Please log in first' });
@@ -34,3 +32,6 @@ exports.getUserQuests = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+// ส่งออกฟังก์ชัน getUserQuests
+module.exports = { getUserQuests };
